@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="112" height="122" viewBox="0 0 112 122">
+<defs>
+ <linearGradient id="leaf" x2="0" y2="1"><stop stop-color="#76cf76"/><stop offset=".55" stop-color="#3cae70"/><stop offset="1" stop-color="#267b61"/></linearGradient>
+ <linearGradient id="bark" x2="0" y2="1"><stop stop-color="#ae7950"/><stop offset="1" stop-color="#704b39"/></linearGradient>
+</defs>
+<ellipse cx="56" cy="110" rx="32" ry="8" fill="#285f40" opacity=".34"/>
+<path d="M49 108q7-24 5-53h12q-3 29 9 53l-8 4H52z" fill="url(#bark)" stroke="#5c4037" stroke-width="2.4"/>
+<path d="M58 78 42 63m25 8 15-17M59 89 43 100m24-12 15 12" fill="none" stroke="#80513d" stroke-width="5" stroke-linecap="round"/>
+<g stroke="#27694f" stroke-width="2.5" stroke-linejoin="round">
+ <path d="M57 6Q68 1 76 11q18-2 19 16 18 8 10 24 10 18-6 27 1 18-19 20-11 15-27 5-17 9-26-5-18 1-18-18-15-11-4-26-6-17 12-24Q20 13 40 14 48 0 57 6z" fill="url(#leaf)"/>
+ <path d="M57 15q10-5 17 5 15-3 17 12 14 7 7 19 8 14-6 20 0 15-17 17-8 13-22 5-14 8-21-4-14 0-14-15-12-8-3-21-5-14 10-19-2-16 14-16Q47 5 57 15z" fill="#4bb77a"/>
+ <path d="M39 28q7-9 15-1m27-1q10 0 12 11M26 53q-1 12 9 17m53 28q11-4 11-14" fill="none" stroke="#9de184" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g fill="#d5ed94"><path d="M34 43q6-8 11 0-5 8-11 0m42-22q6-8 11 0-5 8-11 0m-5 46q6-8 11 0-5 8-11 0m-37 9q5-7 10 0-5 7-10 0"/><circle cx="57" cy="32" r="2"/><circle cx="89" cy="57" r="2"/></g>
+<g fill="#f2c96e" stroke="#d59653" stroke-width="1.2"><path d="M39 31q4-5 8 0-4 5-8 0m37 35q4-5 8 0-4 5-8 0"/></g>
+</svg>

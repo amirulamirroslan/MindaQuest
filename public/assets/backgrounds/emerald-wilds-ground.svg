@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1280" viewBox="0 0 1920 1280">
+<defs>
+  <linearGradient id="floor" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#77bf5e"/><stop offset=".48" stop-color="#69b553"/><stop offset="1" stop-color="#52974b"/></linearGradient>
+  <linearGradient id="trail" x2="0" y2="1"><stop stop-color="#e5c67d"/><stop offset=".48" stop-color="#d2a967"/><stop offset="1" stop-color="#bb8851"/></linearGradient>
+  <linearGradient id="stream" x1="0" y1="0" x2="1" y2=".5"><stop stop-color="#4fb5c5"/><stop offset=".46" stop-color="#71d2d5"/><stop offset="1" stop-color="#3295ad"/></linearGradient>
+  <radialGradient id="sunlit"><stop stop-color="#d9e985" stop-opacity=".18"/><stop offset="1" stop-color="#d9e985" stop-opacity="0"/></radialGradient>
+  <pattern id="grass-fleck" width="92" height="84" patternUnits="userSpaceOnUse">
+    <path d="M12 50q4-8 7-12m-7 12q-1-7-5-10m39-30q4-6 6-10m-6 10q-2-6-6-8m42 64q3-7 7-9m-7 9q-1-5-5-7" fill="none" stroke="#377e43" stroke-width="2" stroke-linecap="round" opacity=".38"/>
+    <path d="M25 73q3-5 6-6m48-43q3-5 6-6" fill="none" stroke="#b5db71" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+    <circle cx="32" cy="20" r="1.7" fill="#d4e68c" opacity=".62"/><circle cx="68" cy="54" r="1.4" fill="#e7d680" opacity=".55"/>
+  </pattern>
+  <pattern id="path-grain" width="76" height="48" patternUnits="userSpaceOnUse">
+    <path d="M9 13h8m24 22h11m11-25h4M23 5h3m39 36h4" stroke="#936c49" stroke-width="2" stroke-linecap="round" opacity=".35"/>
+    <path d="M13 30h3m38-15h5m-33 19h3" stroke="#f5dea0" stroke-width="2" stroke-linecap="round" opacity=".56"/>
+    <circle cx="32" cy="19" r="1.5" fill="#8e6947" opacity=".3"/><circle cx="69" cy="8" r="1.2" fill="#f7dfa2" opacity=".55"/>
+  </pattern>
+  <g id="wildflower-bed">
+    <ellipse cx="48" cy="34" rx="44" ry="9" fill="#285f3d" opacity=".2"/>
+    <path d="M7 30q-3-12 10-15 4-12 17-8 10-8 19 1 13-6 20 6 13 0 13 12-9 8-24 7H19z" fill="#438f4c"/>
+    <path d="M12 25q5-12 16-7 4-12 15-8 8-7 15 2 12-4 16 7M17 29q9-8 18-3 7-8 15-2 8-6 17 0" fill="none" stroke="#72b959" stroke-width="4" stroke-linecap="round"/>
+    <g fill="#398047"><ellipse cx="18" cy="23" rx="7" ry="3" transform="rotate(-28 18 23)"/><ellipse cx="34" cy="17" rx="8" ry="3" transform="rotate(25 34 17)"/><ellipse cx="54" cy="24" rx="8" ry="3" transform="rotate(-20 54 24)"/><ellipse cx="73" cy="19" rx="7" ry="3" transform="rotate(28 73 19)"/></g>
+    <g fill="none" stroke="#347c43" stroke-width="2.5" stroke-linecap="round"><path d="M23 25v-9m0 7-4-4m4 2 4-4M47 25V9m0 11-5-5m5 1 5-5M68 25v-9m0 7-4-4m4 2 4-4"/></g>
+    <g><g fill="#f18bab" stroke="#c5657c" stroke-width="1"><circle cx="23" cy="12" r="4"/><circle cx="18" cy="15" r="3.5"/><circle cx="28" cy="15" r="3.5"/><circle cx="23" cy="17" r="3.5"/><circle cx="23" cy="14" r="2" fill="#f5d577"/></g><g fill="#b9e5f2" stroke="#71b1b9" stroke-width="1"><circle cx="47" cy="6" r="4"/><circle cx="42" cy="9" r="3.5"/><circle cx="52" cy="9" r="3.5"/><circle cx="47" cy="11" r="3.5"/><circle cx="47" cy="8" r="2" fill="#f7d678"/></g><g fill="#f4d56e" stroke="#c69850" stroke-width="1"><circle cx="68" cy="12" r="4"/><circle cx="63" cy="15" r="3.5"/><circle cx="73" cy="15" r="3.5"/><circle cx="68" cy="17" r="3.5"/><circle cx="68" cy="14" r="2" fill="#fff0bc"/></g></g>
+  </g>
+</defs>
+<!-- warm, varied forest floor -->
+<rect width="1920" height="1280" fill="url(#floor)"/>
+<ellipse cx="410" cy="236" rx="560" ry="380" fill="url(#sunlit)"/>
+<ellipse cx="1500" cy="880" rx="570" ry="390" fill="url(#sunlit)"/>
+<path d="M0 80q220-105 440-15t430-6q250-88 470 10t580-40v165q-240 79-510 14t-490 27q-210 72-450-7T0 278z" fill="#8bc969" opacity=".11"/>
+<path d="M0 438q200-95 416 3t430-6q260-100 486 0t588-10v183q-270 72-510 5t-490 35q-212 71-450-9T0 690z" fill="#3f9148" opacity=".09"/>
+<path d="M-60 1000q210-78 435-5t428-24q244-101 500 9t680-8v200q-280 55-550-6t-490 25q-260 67-498-4t-505 15z" fill="#398845" opacity=".12"/>
+<rect width="1920" height="1280" fill="url(#grass-fleck)" opacity=".62"/>
+
+<!-- a clear, lively stream with soft banks and bright current -->
+<path d="M1002 430C940 512 1034 568 976 637S910 748 964 816s-22 147 37 210 16 132 71 200" fill="none" stroke="#397a4a" stroke-width="216" stroke-linecap="round" opacity=".33"/>
+<path d="M994 423C932 507 1028 567 968 637S904 749 956 816s-22 148 39 211 16 133 70 200" fill="none" stroke="#b9d77c" stroke-width="190" stroke-linecap="round" opacity=".82"/>
+<path d="M990 420C928 505 1024 565 964 637S900 749 952 816s-22 148 39 211 16 133 70 200" fill="none" stroke="url(#stream)" stroke-width="162" stroke-linecap="round"/>
+<path d="M951 491q29-17 61 0t63 0m-98 126q30-17 62 0t62 0m-103 122q29-17 61 0t61 0m-74 130q29-17 61 0t60 0m-67 137q29-17 60 0t60 0" fill="none" stroke="#c4f1df" stroke-width="5" stroke-linecap="round" opacity=".78"/>
+<path d="M1020 535h27m-87 116h18m94 108h25m-94 136h18m73 130h24" stroke="#f0f5ca" stroke-width="4" stroke-linecap="round" opacity=".72"/>
+<!-- river stones and lily pads -->
+<g fill="#87977a" stroke="#586e5a" stroke-width="3"><path d="M875 605q3-14 19-15 13-10 25 2 14 2 13 17l-10 12h-36z"/><path d="M1066 702q3-13 17-14 13-9 23 3 13 2 12 15l-9 10h-34z"/><path d="M915 1004q2-13 16-14 12-8 22 2 13 2 12 15l-9 10h-33z"/><path d="M1092 486q3-12 15-13 11-7 20 3 12 2 11 14l-8 9h-31z"/></g>
+<g fill="#4f9b63" stroke="#287b57" stroke-width="3"><path d="M1055 578q16-17 36 0-19 1-27 16-8-5-9-16z"/><path d="M889 863q14-16 33-1-18 0-26 15-7-4-7-14z"/><path d="M1070 941q15-16 34 0-18 1-26 15-8-4-8-15z"/></g>
+
+<!-- winding walking trail: raised moss edge, compacted earth, sun-warmed center -->
+<path d="M402-80C374 42 534 82 498 188S412 329 481 404s42 137-11 202-50 137 10 184 59 70 34 119 53 101 104 133 80 113 89 175 42 116 95 165" fill="none" stroke="#4d914d" stroke-width="88" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+<path d="M402-80C374 42 534 82 498 188S412 329 481 404s42 137-11 202-50 137 10 184 59 70 34 119 53 101 104 133 80 113 89 175 42 116 95 165" fill="none" stroke="#98704b" stroke-width="72" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M402-80C374 42 534 82 498 188S412 329 481 404s42 137-11 202-50 137 10 184 59 70 34 119 53 101 104 133 80 113 89 175 42 116 95 165" fill="none" stroke="url(#trail)" stroke-width="60" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M402-80C374 42 534 82 498 188S412 329 481 404s42 137-11 202-50 137 10 184 59 70 34 119 53 101 104 133 80 113 89 175 42 116 95 165" fill="none" stroke="url(#path-grain)" stroke-width="56" stroke-linecap="round" stroke-linejoin="round" opacity=".65"/>
+<!-- broad cross-trail and bridge approach -->
+<path d="M-90 812C182 795 394 822 594 808s394-13 625 4 461-3 835 9" fill="none" stroke="#4d914d" stroke-width="88" stroke-linecap="round" opacity=".5"/>
+<path d="M-90 812C182 795 394 822 594 808s394-13 625 4 461-3 835 9" fill="none" stroke="#98704b" stroke-width="72" stroke-linecap="round"/>
+<path d="M-90 812C182 795 394 822 594 808s394-13 625 4 461-3 835 9" fill="none" stroke="url(#trail)" stroke-width="60" stroke-linecap="round"/>
+<path d="M-90 812C182 795 394 822 594 808s394-13 625 4 461-3 835 9" fill="none" stroke="url(#path-grain)" stroke-width="56" stroke-linecap="round" opacity=".65"/>
+
+<!-- sturdy little wooden bridge: warm planks, rounded rails, stone footings -->
+<g>
+ <ellipse cx="994" cy="824" rx="147" ry="63" fill="#315f4c" opacity=".36"/>
+ <path d="M874 775q0-13 14-13h212q14 0 14 13v76q0 13-14 13H888q-14 0-14-13z" fill="#704c3d" stroke="#563e36" stroke-width="5"/>
+ <path d="M884 779h205v67H884z" fill="#bd8150" stroke="#edc17a" stroke-width="4"/>
+ <path d="M888 790h197m-197 18h197m-197 18h197m-197 18h197" stroke="#e8b66c" stroke-width="5" opacity=".88"/>
+ <path d="M910 778v70m27-70v70m27-70v70m27-70v70m27-70v70m27-70v70m27-70v70" stroke="#8e5f43" stroke-width="3"/>
+ <path d="M873 775q0-8 8-8h228q8 0 8 8v7H873zm0 70h244v7q0 8-8 8H881q-8 0-8-8z" fill="#8d5d42" stroke="#5d4137" stroke-width="3"/>
+ <g fill="#f2d093"><circle cx="885" cy="778" r="2.5"/><circle cx="1109" cy="778" r="2.5"/><circle cx="885" cy="849" r="2.5"/><circle cx="1109" cy="849" r="2.5"/></g>
+</g>
+
+<!-- delicate ground plants; denser at the banks and beneath the canopy -->
+<g fill="none" stroke-linecap="round">
+ <path d="M140 336q2-23-10-37m10 37q10-20 25-24m-12 24q2-17 0-28M700 161q4-20-7-31m7 31q10-20 24-23M1270 362q-1-25 13-37m-13 37q-9-20-23-23M1507 281q1-23-12-36m12 36q12-19 25-22M319 616q1-22-11-32m11 32q10-17 23-20M1423 1030q1-24-12-35m12 35q12-21 26-23M1230 1137q1-19-9-28m9 28q10-16 20-19M285 1052q2-20-9-30m9 30q10-17 21-20" stroke="#367f43" stroke-width="4" opacity=".75"/>
+ <path d="M140 336q-2-15-9-21m21 16q8-13 15-15m533-155q-2-13-8-18m20 14q8-13 15-15m563 221q3-14 10-20m-33 14q-7-14-14-17m729-68q-2-13-8-19m20 13q9-12 16-14m-1174 381q-2-13-8-18m20 14q8-12 15-14m1051 397q-2-13-8-18m20 14q8-12 15-14m-805 129q-2-12-7-16m17 13q7-11 13-13m-937-69q-2-12-7-16m17 13q7-11 13-13" stroke="#7ac15c" stroke-width="3" opacity=".8"/>
+</g>
+<g fill="#f0ce70" stroke="#b98750" stroke-width="2">
+ <g transform="translate(225 305)"><path d="M0 10V26m0-10-6-5m6 8 7-6" fill="none" stroke="#438b48" stroke-width="3"/><circle cy="5" r="4"/><circle cx="-6" cy="7" r="3.5"/><circle cx="6" cy="7" r="3.5"/></g>
+ <g transform="translate(714 310)"><path d="M0 10V26m0-10-6-5m6 8 7-6" fill="none" stroke="#438b48" stroke-width="3"/><circle cy="5" r="4"/><circle cx="-6" cy="7" r="3.5"/><circle cx="6" cy="7" r="3.5"/></g>
+ <g transform="translate(1332 588)"><path d="M0 10V26m0-10-6-5m6 8 7-6" fill="none" stroke="#438b48" stroke-width="3"/><circle cy="5" r="4"/><circle cx="-6" cy="7" r="3.5"/><circle cx="6" cy="7" r="3.5"/></g>
+ <g transform="translate(1530 957)"><path d="M0 10V26m0-10-6-5m6 8 7-6" fill="none" stroke="#438b48" stroke-width="3"/><circle cy="5" r="4"/><circle cx="-6" cy="7" r="3.5"/><circle cx="6" cy="7" r="3.5"/></g>
+</g>
+<g fill="#ee8eaa" stroke="#bd6079" stroke-width="1.5"><circle cx="618" cy="253" r="4"/><circle cx="611" cy="256" r="3.5"/><circle cx="625" cy="257" r="3.5"/><circle cx="374" cy="492" r="4"/><circle cx="367" cy="495" r="3.5"/><circle cx="381" cy="496" r="3.5"/><circle cx="1375" cy="1145" r="4"/><circle cx="1368" cy="1148" r="3.5"/><circle cx="1382" cy="1148" r="3.5"/></g>
+<g fill="#f4d38b" opacity=".82"><circle cx="87" cy="172" r="2"/><circle cx="804" cy="567" r="2"/><circle cx="1180" cy="330" r="2"/><circle cx="1610" cy="631" r="2"/><circle cx="734" cy="1002" r="2"/><circle cx="1850" cy="1084" r="2"/><circle cx="468" cy="1173" r="2"/><circle cx="120" cy="856" r="2"/><circle cx="1745" cy="219" r="2"/></g>
+<!-- intentional meadow pockets add soft clusters of broad leaves and mixed blooms -->
+<use href="#wildflower-bed" transform="translate(98 258) rotate(-8 48 20) scale(1.05)"/>
+<use href="#wildflower-bed" transform="translate(735 378) rotate(9 48 20) scale(.86)"/>
+<use href="#wildflower-bed" transform="translate(1280 292) rotate(-12 48 20) scale(1.12)"/>
+<use href="#wildflower-bed" transform="translate(228 890) rotate(7 48 20) scale(.95)"/>
+<use href="#wildflower-bed" transform="translate(1310 938) rotate(-5 48 20) scale(1.08)"/>
+<use href="#wildflower-bed" transform="translate(1510 1124) rotate(12 48 20) scale(.9)"/>
+<use href="#wildflower-bed" transform="translate(600 1060) rotate(-9 48 20) scale(.82)"/>
+</svg>

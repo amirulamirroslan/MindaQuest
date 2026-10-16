@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="48" viewBox="0 0 64 48">
+<defs>
+ <linearGradient id="stone" x1=".2" y1="0" x2=".8" y2="1"><stop stop-color="#c3c9ae"/><stop offset=".42" stop-color="#899a91"/><stop offset="1" stop-color="#586e68"/></linearGradient>
+ <linearGradient id="face" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e0dec0"/><stop offset="1" stop-color="#9da995"/></linearGradient>
+</defs>
+<ellipse cx="32" cy="41" rx="25" ry="5" fill="#285f40" opacity=".35"/>
+<path d="M5 34q-2-8 6-13l4-10q5-8 13-6 7-7 14 1 10-1 12 8 8 4 7 13l-8 8H12z" fill="url(#stone)" stroke="#52675d" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M15 21 19 12q4-5 10-4l4 17-17 9-7-1q-1-7 6-12z" fill="url(#face)" opacity=".82"/>
+<path d="m33 8 8-2q8 1 9 10l8 5q3 7-3 13l-17-1-7-8z" fill="#74877e" opacity=".8"/>
+<path d="m19 13 5-4m8 3 4 9m8-8 4 5M11 25l7-4m17 8 8 4" fill="none" stroke="#dfe2c6" stroke-width="2.3" stroke-linecap="round" opacity=".9"/>
+<path d="M12 35q8-5 17-1m7-2q7-4 14 0" fill="none" stroke="#526b5b" stroke-width="2.2" stroke-linecap="round"/>
+<g fill="#6ba35a" stroke="#477c4d" stroke-width="1"><path d="M37 15q5-8 11-3 3 5-2 8-4-1-9-5z"/><circle cx="45" cy="10" r="3" fill="#8dc266"/></g>
+<circle cx="28" cy="20" r="1.4" fill="#f0edcc"/><circle cx="49" cy="25" r="1.2" fill="#d8ddc4"/>
+</svg>
