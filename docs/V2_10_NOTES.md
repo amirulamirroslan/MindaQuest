@@ -1,0 +1,10 @@
+# MindQuest v2.10 - weapon size, shoes, map, outline switch, CSS clean-up
+
+Weapons: `render/chibi/weaponFit.ts` shrinks each hand-held mesh about its grip (1H sword x0.66, 2H sword x0.70, axes x0.78, daggers x0.86, staff x0.80, shields x0.82); `ChibiRig.fitWeapons` applies it before the outline twins are made.
+Shoes: new Shoes slot (`shoes`) with six styles (Trail Boots default, Cuffed, Leaf Wraps, Fur, Moon Slippers, Silver Toe-caps). The kit boot is painted into the legs mesh, so styles ADD code-made pieces (`render/chibi/footwear.ts`) to the foot/toe bones; boot colour still comes from the Colours tab. Old saves load with the default style.
+Bug fixed: three.js strips `. [ ] : /` from node names (`foot.l` -> `footl`), so every dotted bone lookup failed. `ChibiRig.bone()` now cleans the name (`nodeNames.ts`). This also makes the Glow Lantern off-hand item attach (it never did before).
+Map: `M` key or the Map tile. `systems/mapView.ts` (pure: landmarks, world->map, quest targets) and `ui/MapPanel.ts` (canvas: land shaded from `heightAt`, trail, houses, pond, landmark pictures and names, hero arrow, pulsing goal star). English and Malay strings.
+Performance: the hero outline is a quality setting (`SETTINGS[q].outline`): on for high and medium, off for low. `?outline=1|0` overrides it; the `?fps` meter shows `+outline`. Not measured on a real phone.
+CSS: `hud3d.css` had 175 declarations overridden by later identical-selector rules plus 40 empty blocks; removed (36.9 KB -> 32.0 KB). Checked with `tools/browser-checks/css-snapshot.mjs`: computed styles and positions of every `.mq-*` element in 39 states (phone, landscape, desktop; HUD, pause, each wardrobe tab) are identical before and after.
+Checks: 403 unit tests, `tsc -b`, build. Screenshots: `node tools/browser-checks/v2-10-shots.mjs dist out weapons|feet` (SHOES=id,id for styles).
+Not done / not verified: no real-device frame rate; Glow Lantern placement not looked at; shoe pieces have no outline; map has no fog of war or tap-to-inspect.

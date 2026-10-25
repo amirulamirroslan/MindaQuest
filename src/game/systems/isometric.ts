@@ -12,3 +12,11 @@ export function projectIsometricPoint(x: number, y: number, horizontalOffset = 6
 export function screenDirectionToWorld(x: number, y: number): Point2D {
   return { x: x + 2 * y, y: -x + 2 * y };
 }
+
+/**
+ * Converts a velocity on the gameplay ground plane into the velocity it has on screen.
+ * This is the derivative of {@link projectIsometricPoint}: the same 2:1 foreshortening applies.
+ */
+export function worldVelocityToScreen(vx: number, vy: number): Point2D {
+  return { x: (vx - vy) * 0.5, y: (vx + vy) * 0.25 };
+}

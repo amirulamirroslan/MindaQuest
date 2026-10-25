@@ -1,0 +1,10 @@
+# MindQuest v2.12 - attack, spin and dodge
+
+Audit: the kit has 45 clips; the game used ~14. Unused combat clips now used: `1H_Melee_Attack_Slice_Diagonal`, `1H/2H_Melee_Attack_Stab`, `2H_Melee_Attack_Spin`, `Dualwield_Melee_Attack_Chop/Stab`, `Spellcast_Raise`, `Unarmed_Melee_Attack_Kick`.
+
+**Attack = 3-hit combo.** `PlayerCombat.comboStep` (0,1,2; a swing within 0.75 s of the last continues it; dodge/special/pause resets). `chibiClips.attackHit(loadout, step)` gives each weapon three swings (e.g. sword: slice, back-slice, overhead chop; dagger ends in a stab; 2H: slice, stab, chop; dual: slice, chop, stab; staff: bolt, bolt, big raise; unarmed: punch, kick, punch). Step 0 is the old attack. The finisher reaches 30 % further and wider (damage unchanged), lunges further, and gets a shockwave ring, flash and camera shake.
+**Blade trail.** `chibi/WeaponTrail.ts`: a ribbon sampled from the real weapon tip each frame, Catmull-Rom smoothed, fading, tinted per step (warm white, gold, ice blue). Falls back to the old flat ribbon with no weapon / old rig. Stab and spell swings also get a forward streak.
+**Hit feel.** Hit-stop (0.04-0.09 s near-freeze on a landed blow, longer per combo step), shake, sparks along the arc (even on a miss), impact flash + chips flying away from the hero, swing/hit sounds pitched per step.
+**Spin.** Now the kit's real spin clip (one turn, weapon out) plus one extra body turn (two in all), a charge-up glow and rising sparkles, a cyan blade sweep, two shockwave rings, flash, upward burst, shake, hit-stop.
+**Dodge.** Spirit-blue glow while the invulnerable frames are open (`ChibiRig.setPhase`), afterimage ghosts along the path (`Fx3D.ghost`), speed streaks, dust kicked up behind and at the end, extra whoosh layer.
+Checks: 411 tests, tsc, build; frames of each move at the real game camera and from the side; live run of combo 0-1-2-0, dodge and spin on desktop and phone viewports with no console errors. Not measured on a real phone (extra cost: one ribbon mesh + a few sprites). Not done: dodge left/right/back clips (the hero still turns to face the roll), no per-weapon trail colours beyond the three steps.

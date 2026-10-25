@@ -1,41 +1,25 @@
-# MindaQuest — Stage 2: Playable Forest Prototype
+# MindaQuest — Whispering Woods (3D)
 
-A browser-first top-down adventure prototype for children aged 6–10. This milestone focuses on a playable foundation before accounts, cloud saves, subscriptions, or backend services.
+A browser-first 3D adventure for children aged 6-10. three.js + TypeScript + Vite. No accounts, tracking, payments, paid APIs or remote runtime art.
 
-## Included
-- Phaser 3 + TypeScript + Vite
-- Phaser forest map, connected grass paths, a winding river, and a timber bridge with a dedicated walkable crossing
-- Locally bundled Mixel 32×32 forest, ground, water, prop, and four-direction character art; see `ASSET-LICENSES.md`
-- WASD / arrow-key movement, diagonal speed normalization, camera follow, collision objects
-- Main menu, pause/resume, restart, return to menu
-- On-screen directional buttons for touch screens
-- Unit tests for movement normalization
-- No remote runtime art, backend credentials, or service dependencies
+**v2.17: the original 2D isometric Phaser game was removed.** The 3D game is the only game. `index.html` is the game; `3d.html` is the old address and opens the same game. Phaser is no longer a dependency.
 
 ## Run in Windows PowerShell
 ```powershell
-Set-Location "C:\MindaQuest"
 npm install
 npm test
 npm run build
 npm run dev
 ```
-Open the local URL printed by Vite (normally `http://127.0.0.1:5173/`).
+Open the URL Vite prints (normally `http://127.0.0.1:5173/`).
 
-## Controls
-- Move: WASD or arrow keys
-- Pause/resume: Escape or the pause icon
-- Touch: directional pad at lower-left and pause icon at upper-right
+## Where things live
+- `src/game3d/` - the game: world, hero (chibi rig), quests, Rune Stone puzzles, HUD, cosmetics, input, effects.
+- `src/game/` - small shared modules the 3D game still uses (outfit parts and storage, day-night maths, synthesised audio, wind, touch stick, world geometry). It no longer holds any game scene or Phaser code.
+- `public/assets/hero`, `public/assets/chibi` - the 3D hero skeleton and chibi kit (licences in `ASSET-LICENSES.md`).
+- `docs/` - version notes (latest: `V2_28_NOTES.md`, Crystal Hollow completed; older: `V2_22_NOTES.md`). Notes older than v2.17 describe the 2D game and are kept as history. Start with `docs/V2_4_STYLE_HANDOFF.md` and the latest `V2_*_NOTES.md`.
+- `tools/` - the chibi-kit build scripts and optional browser checks.
 
-## GitHub
-This ZIP does not include `.git`; extracting into `C:\MindaQuest` preserves your existing Git repository and remote. After tests/build and a quick playtest:
-```powershell
-Set-Location "C:\MindaQuest"
-git status
-git add .
-git commit -m "Build MindaQuest playable forest prototype"
-git push -u origin main
-```
-
-## Next milestone
-NPC dialogue, learning quests, bridge-repair inventory logic, save data, parent controls, and English/Bahasa Melayu localisation. No accounts, tracking, public chat, or payments are included.
+## v2.29 — Moonwake Shore
+The third area (reached through the driftwood arch in the woods once the Heartstone is touched): ring the bell-buoys to turn the tide, cross the Moon
+Causeway, calm the Tidecaller Heron and light the lamp. See `docs/V2_29_NOTES.md`.

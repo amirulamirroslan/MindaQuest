@@ -1,34 +1,80 @@
 import Phaser from 'phaser';
-import { GAME_HEIGHT, GAME_WIDTH } from '../config';
+import { audioFor } from '../audio/GameAudio';
+import { getLayout } from '../responsive';
+import { fitScale, textResolutionFor } from '../systems/viewport';
+import { applyTextResolution, paintPanel, setTextResolution, textStyle, UI } from '../ui/theme';
 
+const PANEL_W = 320, PANEL_H = 300;
+
+/** Pause overlay. Built around its own origin and scaled to fit, so it stays centred and tappable at any size. */
 export class PauseScene extends Phaser.Scene {
+  private dim!: Phaser.GameObjects.Rectangle;
+  private root!: Phaser.GameObjects.Container;
+  private soundIcon!: Phaser.GameObjects.Graphics;
+
   constructor() { super('PauseScene'); }
 
   create() {
-    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x09241d, 0.68);
+    const audio = audioFor(this);
+    const leave = (next: () => void) => () => { audio.duck(false); audio.click(); next(); };
+    this.dim = this.add.rectangle(0, 0, 10, 10, 0x09241d, 0.62).setOrigin(0).setInteractive();
     const panel = this.add.graphics();
-    panel.fillStyle(0x061f19, 0.38).fillRoundedRect(304, 137, 368, 352, 26);
-    panel.fillStyle(0x174b39, 0.98).fillRoundedRect(296, 128, 368, 352, 26);
-    panel.lineStyle(3, 0xc0dda0, 0.9).strokeRoundedRect(296, 128, 368, 352, 26);
-    panel.lineStyle(1, 0xf1d58b, 0.72).strokeRoundedRect(306, 138, 348, 332, 20);
-    this.add.circle(GAME_WIDTH / 2, 182, 22, 0x2d704c).setStrokeStyle(2, 0xe9d28f, 0.9);
-    this.add.text(GAME_WIDTH / 2, 181, 'Ⅱ', { fontFamily: 'Arial', fontSize: '19px', fontStyle: 'bold', color: '#fff2c8' }).setOrigin(0.5);
-    this.add.text(GAME_WIDTH / 2, 225, 'TAKE A BREATHER', {
-      fontFamily: 'Trebuchet MS, Arial', fontSize: '27px', fontStyle: 'bold', color: '#fff0bf', letterSpacing: 1,
-    }).setOrigin(0.5);
-    this.add.text(GAME_WIDTH / 2, 258, 'The forest will be right here when you return.', {
-      fontFamily: 'Trebuchet MS, Arial', fontSize: '13px', color: '#c5dfc0',
-    }).setOrigin(0.5);
-    this.button(314, 'RESUME EXPLORING', 0xf1c969, () => { this.scene.stop(); this.scene.resume('WorldScene'); });
-    this.button(379, 'RESTART ADVENTURE', 0xc5e4b0, () => { this.scene.stop('WorldScene'); this.scene.stop(); this.scene.start('WorldScene'); });
-    this.button(444, 'RETURN TO THE GROVE', 0xd9e8c8, () => { this.scene.stop('WorldScene'); this.scene.stop(); this.scene.start('MainMenuScene'); });
+    paintPanel(panel, -PANEL_W / 2, -PANEL_H / 2, PANEL_W, PANEL_H, 16, 0.97);
+    setTextResolution(textResolutionFor(getLayout(this).uiScale));
+    const title = this.add.text(0, -104, 'TAKE A BREATHER', { ...textStyle(22, UI.cream, true), letterSpacing: 1 } as Phaser.Types.GameObjects.Text.TextStyle).setOrigin(0.5);
+    const sub = this.add.text(0, -74, 'The forest will be right here when you return.', textStyle(12, UI.muted)).setOrigin(0.5);
+    const resume = leave(() => { this.scene.stop(); this.scene.resume('WorldScene'); });
+    this.root = this.add.container(0, 0, [panel, title, sub,
+      ...this.button(-24, 'RESUME EXPLORING', true, resume),
+      ...this.button(34, 'RESTART ADVENTURE', false, leave(() => { this.scene.stop('WorldScene'); this.scene.stop(); this.scene.start('WorldScene'); })),
+      ...this.button(92, 'RETURN TO THE GROVE', false, leave(() => { this.scene.stop('WorldScene'); this.scene.stop(); this.scene.start('MainMenuScene'); })),
+      ...this.soundButton(PANEL_W / 2 - 34, -PANEL_H / 2 + 34),
+    ]);
+    this.input.keyboard?.once('keydown-ESC', resume);
+    this.scale.on(Phaser.Scale.Events.RESIZE, this.layout, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, this.layout, this));
+    this.layout();
   }
 
-  private button(y: number, label: string, color: number, action: () => void) {
-    const bg = this.add.rectangle(GAME_WIDTH / 2, y, 276, 48, color).setStrokeStyle(2, 0xfff0c3, 0.8).setInteractive({ useHandCursor: true });
-    this.add.text(GAME_WIDTH / 2, y, label, { fontFamily: 'Trebuchet MS, Arial', fontSize: '15px', fontStyle: 'bold', color: '#244d39', letterSpacing: 0.5 }).setOrigin(0.5);
-    bg.on('pointerover', () => bg.setAlpha(0.82));
+  private layout() {
+    const layout = getLayout(this);
+    const room = { w: layout.width - layout.safe.left - layout.safe.right, h: layout.height - layout.safe.top - layout.safe.bottom };
+    const s = fitScale(PANEL_W + 24, PANEL_H + 24, room.w, room.h, layout.uiScale);
+    this.dim.setSize(layout.width, layout.height);
+    this.root.setScale(s).setPosition(layout.safe.left + room.w / 2, layout.safe.top + room.h / 2);
+    applyTextResolution(this.root, textResolutionFor(s));
+  }
+
+  private button(y: number, label: string, primary: boolean, action: () => void) {
+    // 44 design units tall: at least 44 CSS px on every phone layout.
+    const bg = this.add.rectangle(0, y, 260, 46, primary ? UI.gold : UI.dim, primary ? 1 : 0.9).setStrokeStyle(1, UI.border, 0.7).setInteractive({ useHandCursor: true });
+    const text = this.add.text(0, y, label, textStyle(14, primary ? '#244d39' : UI.cream, true)).setOrigin(0.5);
+    bg.on('pointerover', () => bg.setAlpha(0.85));
     bg.on('pointerout', () => bg.setAlpha(1));
     bg.on('pointerdown', action);
+    return [bg, text];
+  }
+
+  /** A round speaker button in the panel's corner: waves when sound is on, a slash when it is off. */
+  private soundButton(x: number, y: number) {
+    const audio = audioFor(this);
+    const disc = this.add.circle(x, y, 23, UI.dim, 0.9).setStrokeStyle(1, UI.border, 0.7).setInteractive({ useHandCursor: true });
+    this.soundIcon = this.add.graphics({ x, y });
+    const draw = () => {
+      const g = this.soundIcon.clear();
+      g.fillStyle(0xfff1c9, 1).fillRect(-10, -4, 5, 8);
+      g.fillPoints([new Phaser.Geom.Point(-5, -4), new Phaser.Geom.Point(2, -9), new Phaser.Geom.Point(2, 9), new Phaser.Geom.Point(-5, 4)], true);
+      if (audio.isMuted) g.lineStyle(3, 0xe8806a, 1).lineBetween(-12, -12, 12, 12);
+      else {
+        g.lineStyle(2, 0xfff1c9, 1);
+        g.beginPath().arc(2, 0, 6, -0.9, 0.9).strokePath();
+        g.beginPath().arc(2, 0, 11, -0.9, 0.9).strokePath();
+      }
+    };
+    draw();
+    disc.on('pointerover', () => disc.setAlpha(0.85));
+    disc.on('pointerout', () => disc.setAlpha(1));
+    disc.on('pointerdown', () => { if (!audio.toggleMuted()) audio.click(); draw(); });
+    return [disc, this.soundIcon];
   }
 }

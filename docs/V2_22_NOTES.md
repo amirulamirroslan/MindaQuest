@@ -1,0 +1,8 @@
+# v2.22 - Crystal Hollow (second area)
+Finding: the game was one world (hard-coded woods positions, one height function, one collider grid) and the Moonlit Gate only showed an end card.
+Change: the gate now leads into the Crystal Hollow, a compact cave (about 1,500 m2): Lantern Cavern (Moon Prism, Echo mural), Pink nook, Glowcap Grotto (+ secret nook), Echo Pool, Heart Chamber behind the Heart Door.
+Goal: strike the three Echo Crystals in the mural's order (sword swing or Use) -> Heart Door opens (+20 XP) -> touch the Heartstone (+100 XP, Crystal Hat, end card). Optional: 5 Moon Shards (10 XP each, +40 for all) and 3 glowcaps that open the secret nook. Total 210 XP; nothing can be farmed.
+Architecture: systems/hollowLayout.ts (floor as discs + capped paths, colliders, decor, reachability), hollowQuest.ts (pure reducer + own save key `mindquest.hollow.v1`), hollowMap.ts, data/hollowText.ts (EN+MS), render/HollowWorld.ts (built lazily on first entry; woods group hidden while inside). woodsQuest.ts gained a `hollow` XP event (only counts once the woods quest is complete). Existing woods save/quest/combat untouched.
+Tests: 340 unit tests (31 new). Headless Chrome (software GL) walked: gate -> Hollow, mural, shard, wrong order reset, right order, glowcaps + secret, door, Heartstone, reward equipped, end card, return to woods, saves persisted; no console errors.
+Not verified: real phones (touch Use button, performance: flagstone floor shader and ~45 glow sprites are the likeliest cost), Hollow map screen visually, Malay text on screen, the 'blue'/'secret nook' screenshots in the last run.
+Next: a cave enemy (combat in the Hollow), then more chambers/NPC quests; consider code-splitting the 1 MB game chunk.
