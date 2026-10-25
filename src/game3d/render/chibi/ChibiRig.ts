@@ -154,8 +154,9 @@ export class ChibiRig {
     const t: Partial<Record<Slot, number>> = {};
     const put = (s: Slot, v: number | undefined) => { if (v !== undefined) t[s] = v; };
     if (kind === 'head') { put('hood', hex('hood')); put('skin', hex('skin')); put('eyes', hex('eyes')); }
-    else if (kind === 'body') { put('tunic', hex('tunic')); put('gear', hex('gear')); put('skin', hex('skin')); }
-    else if (kind === 'legs') { put('trousers', hex('trousers')); put('boots', hex('boots')); put('skin', hex('skin')); }
+    // v2.30: an outfit or trousers item may carry its own colour (`variantTint`, the Sailor set); the wardrobe's colour pick still wins when the child chose one
+    else if (kind === 'body') { put('tunic', hex('tunic') ?? tintHex ?? undefined); put('gear', hex('gear')); put('skin', hex('skin')); }
+    else if (kind === 'legs') { put('trousers', hex('trousers') ?? tintHex ?? undefined); put('boots', hex('boots')); put('skin', hex('skin')); }
     else if (kind === 'weapon') put('steel', hex('steel'));
     else if (kind === 'cape' && tintHex !== null) t.cape = tintHex;
     else if (kind === 'headgear' && tintHex !== null) t.hat = tintHex;
@@ -196,7 +197,7 @@ export class ChibiRig {
     this.trailLocal = undefined;
     const show = visibleKitNodes(l);
     const tintOf = (name: string): number | null => {
-      for (const [slot, swatch] of [['cape', l.capeSwatch], ['headgear', l.hatSwatch]] as const) {
+      for (const [slot, swatch] of [['cape', l.capeSwatch], ['headgear', l.hatSwatch], ['outfit', 0], ['legs', 0]] as const) {
         const it = l.items[slot]; if (!it?.kit.includes(name)) continue;
         if (swatch > 0) return PARTS.tunic.swatches[swatch].hex;
         return it.variantTint ?? null;
@@ -212,9 +213,10 @@ export class ChibiRig {
     this.applyEmissive();
     // code-made props
     const wantCrown = l.items.headgear?.proc === 'leaf-crown', wantLantern = l.items.offhand?.proc === 'lantern';
+    const wantSailor = l.items.headgear?.proc === 'sailor-cap';
     const wantSea = l.items.headgear?.proc === 'sea-crown', wantBeacon = l.items.offhand?.proc === 'lighthouse-lantern';
     this.prop('leaf-crown', 'head', wantCrown, buildLeafCrown); this.prop('lantern', 'handslot.l', wantLantern, buildLantern);
-    this.prop('sea-crown', 'head', wantSea, buildSeaCrown); this.prop('lighthouse-lantern', 'handslot.l', wantBeacon, buildLighthouseLantern);
+    this.prop('sea-crown', 'head', wantSea, buildSeaCrown); this.prop('sailor-cap', 'head', wantSailor, buildSailorCap); this.prop('lighthouse-lantern', 'handslot.l', wantBeacon, buildLighthouseLantern);
     this.applyShoes(l.items.shoes?.proc);
   }
 
@@ -249,27 +251,46 @@ export class ChibiRig {
   }
 }
 
+/**
+ * Where a crown sits, in the head bone's own units (the bone is scaled about 0.63 in the world, and the chibi skull measures about 0.54
+ * in these units across, centred 0.45 up from the bone). v2.30: the crowns used to be built at y 0.5 / radius 0.34, which is INSIDE the
+ * skull, so the Leaf Crown and the Sea-glass Crown were never visible. A ring at y 0.84 with radius 0.52 rests on the hair.
+ */
+export const CROWN = { y: 0.84, r: 0.52 } as const;
 function buildLeafCrown(): Group {
   const g = new Group(); const leaf = new MeshStandardMaterial({ color: 0x6cb554, roughness: 0.7, side: DoubleSide });
-  const ring = new Mesh(new TorusGeometry(0.34, 0.035, 6, 20), new MeshStandardMaterial({ color: 0x8a6a3a, roughness: 0.8 }));
-  ring.rotation.x = Math.PI / 2; ring.position.set(0, 0.5, 0); g.add(ring);
+  const ring = new Mesh(new TorusGeometry(CROWN.r, 0.05, 6, 24), new MeshStandardMaterial({ color: 0x8a6a3a, roughness: 0.8 }));
+  ring.rotation.x = Math.PI / 2; ring.position.set(0, CROWN.y, 0); g.add(ring);
   for (let i = 0; i < 9; i++) {
-    const a = (i / 9) * Math.PI * 2; const c = new Mesh(new ConeGeometry(0.07, 0.2, 5), leaf);
-    c.position.set(Math.sin(a) * 0.34, 0.6, Math.cos(a) * 0.34); c.rotation.set(Math.cos(a) * 0.35, 0, -Math.sin(a) * 0.35); g.add(c);
+    const a = (i / 9) * Math.PI * 2; const c = new Mesh(new ConeGeometry(0.1, 0.3, 5), leaf);
+    c.position.set(Math.sin(a) * CROWN.r, CROWN.y + 0.14, Math.cos(a) * CROWN.r); c.rotation.set(Math.cos(a) * 0.3, 0, -Math.sin(a) * 0.3); g.add(c);
   }
-  const gem = new Mesh(new SphereGeometry(0.05, 8, 6), new MeshBasicMaterial({ color: 0xaaf4ea })); gem.position.set(0, 0.58, 0.35); g.add(gem);
+  const gem = new Mesh(new SphereGeometry(0.07, 8, 6), new MeshBasicMaterial({ color: 0xaaf4ea })); gem.position.set(0, CROWN.y + 0.05, CROWN.r + 0.02); g.add(gem);
   g.traverse(o => { (o as Mesh).castShadow = true; });
   return g;
 }
 /** The Sea-glass Crown: a ring of driftwood set with seven tumbled glass shards in sea colours, and a pearl at the front. */
 function buildSeaCrown(): Group {
   const g = new Group(), hues = [0x7fe8d0, 0x8fd0ff, 0xb8f0a8, 0xffd0e8, 0xa8c8ff, 0x7fe8d0, 0x8fd0ff];
-  const ring = new Mesh(new TorusGeometry(0.34, 0.04, 6, 24), new MeshStandardMaterial({ color: 0xc9a46a, roughness: 0.8 })); ring.rotation.x = Math.PI / 2; ring.position.set(0, 0.5, 0); g.add(ring);
+  const ring = new Mesh(new TorusGeometry(CROWN.r, 0.055, 6, 24), new MeshStandardMaterial({ color: 0xc9a46a, roughness: 0.8 })); ring.rotation.x = Math.PI / 2; ring.position.set(0, CROWN.y, 0); g.add(ring);
   hues.forEach((h, i) => {
-    const a = (i / hues.length) * Math.PI * 2, shard = new Mesh(new ConeGeometry(0.075, 0.24 + (i % 3) * 0.05, 4), new MeshStandardMaterial({ color: h, emissive: h, emissiveIntensity: 0.45, roughness: 0.2, transparent: true, opacity: 0.88 }));
-    shard.position.set(Math.sin(a) * 0.34, 0.63, Math.cos(a) * 0.34); shard.rotation.set(Math.cos(a) * 0.3, 0, -Math.sin(a) * 0.3); g.add(shard);
+    const a = (i / hues.length) * Math.PI * 2, tall = 0.34 + (i % 3) * 0.07, shard = new Mesh(new ConeGeometry(0.1, tall, 4), new MeshStandardMaterial({ color: h, emissive: h, emissiveIntensity: 0.45, roughness: 0.2, transparent: true, opacity: 0.9 }));
+    shard.position.set(Math.sin(a) * CROWN.r, CROWN.y + tall / 2, Math.cos(a) * CROWN.r); shard.rotation.set(Math.cos(a) * 0.25, 0, -Math.sin(a) * 0.25); g.add(shard);
   });
-  const pearl = new Mesh(new SphereGeometry(0.06, 10, 8), new MeshBasicMaterial({ color: 0xfff6e8 })); pearl.position.set(0, 0.53, 0.36); g.add(pearl);
+  const pearl = new Mesh(new SphereGeometry(0.085, 10, 8), new MeshBasicMaterial({ color: 0xfff6e8 })); pearl.position.set(0, CROWN.y, CROWN.r + 0.03); g.add(pearl);
+  g.traverse(o => { (o as Mesh).castShadow = true; });
+  return g;
+}
+/** v2.30 Sailor Cap: a round white sailor\u2019s cap with a navy band, a little brim, a gold button and two ribbon tails at the back. (It used to be the Knight Helmet, spikes and all.) */
+function buildSailorCap(): Group {
+  const g = new Group(), white = new MeshStandardMaterial({ color: 0xf4f6fa, roughness: 0.85 }), navy = new MeshStandardMaterial({ color: 0x24407a, roughness: 0.8 });
+  const crown = new Mesh(new CylinderGeometry(0.42, 0.5, 0.3, 18), white); crown.position.set(0, 0.88, 0);
+  const top = new Mesh(new CylinderGeometry(0.44, 0.42, 0.05, 18), white); top.position.set(0, 1.04, 0);
+  const band = new Mesh(new CylinderGeometry(0.505, 0.52, 0.1, 18), navy); band.position.set(0, 0.76, 0);
+  const brim = new Mesh(new TorusGeometry(0.52, 0.035, 6, 24), white); brim.rotation.x = Math.PI / 2; brim.position.set(0, 0.71, 0);
+  const button = new Mesh(new SphereGeometry(0.06, 8, 6), new MeshStandardMaterial({ color: 0xf0d27a, roughness: 0.4, metalness: 0.3 })); button.position.set(0, 1.08, 0);
+  g.add(crown, top, band, brim, button);
+  for (const s of [-1, 1]) { const tail = new Mesh(new BoxGeometry(0.08, 0.36, 0.02), navy); tail.position.set(s * 0.09, 0.58, -0.52); tail.rotation.set(0.2, 0, s * 0.18); g.add(tail); }
   g.traverse(o => { (o as Mesh).castShadow = true; });
   return g;
 }
@@ -280,7 +301,7 @@ function buildLighthouseLantern(): Group {
   const cap = new Mesh(new ConeGeometry(0.17, 0.14, 10), metal); cap.position.set(0, 0.08, 0); const base = new Mesh(new CylinderGeometry(0.14, 0.14, 0.04, 10), new MeshStandardMaterial({ color: 0x3a3a48 })); base.position.set(0, -0.3, 0);
   const handle = new Mesh(new TorusGeometry(0.08, 0.015, 5, 10, Math.PI), new MeshStandardMaterial({ color: 0x3a3a48 })); handle.position.set(0, 0.16, 0);
   const glow = glowSprite(0xfff0c0, 1.5, 0.85); glow.position.set(0, -0.14, 0);
-  g.add(body, cap, base, handle, glow); g.position.set(0, 0.05, 0.1);
+  g.add(body, cap, base, handle, glow); g.position.set(0, 0.05, 0.1); g.scale.setScalar(1.4); // v2.30: bigger, so the lit lamp body reads in the hand
   return g;
 }
 function buildLantern(): Group {

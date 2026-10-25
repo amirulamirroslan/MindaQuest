@@ -107,7 +107,7 @@ export function itemIcon(i: CosmeticItem): IconName {
   switch (i.slot) {
     case 'weapon': return i.weapon ? WEAPON_ICON[i.weapon] : 'sword';
     case 'offhand': return i.offhand === 'book' ? 'book' : i.offhand === 'lantern' ? 'lantern' : i.offhand === 'weapon' ? (i.id.includes('dagger') ? 'dagger' : i.id.includes('axe') ? 'axe' : 'sword') : 'shield';
-    case 'headgear': return i.proc === 'leaf-crown' ? 'crown' : i.id.startsWith('helm') ? 'helm' : 'hat';
+    case 'headgear': return i.proc === 'leaf-crown' || i.proc === 'sea-crown' ? 'crown' : i.id.startsWith('helm') ? 'helm' : 'hat';
     case 'outfit': return i.collection === 'silver-guard' ? 'shield' : 'shirt';
     default: return SLOT_ICON[i.slot];
   }

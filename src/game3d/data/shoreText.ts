@@ -30,6 +30,8 @@ export interface ShoreStrings {
   bottle: { name: string; lines: [string[], string[], string[]] };
   /** The Tide Board: the title and one line per song (`{order}` is the bells in order). */
   board: { title: string; ebb: string; flood: string; hint: string };
+  /** v2.30: the always-visible tide line in the quest card (text and an arrow, so the tide never depends on colour). */
+  tide: Record<'low' | 'high' | 'still', string>;
   /** Names on the shore map. */
   labels: Record<'beach' | 'village' | 'flats' | 'wreck' | 'island' | 'cave', string>;
   mapTitle: string;
@@ -101,7 +103,7 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
       report: ['Eight pieces! Look how they shine!', 'Let me count out your pay, and you can count with me.'],
       ask: {
         add: 'The glass is worth RM{a}, and the shells are worth RM{b}. How many ringgit is that altogether?',
-        subtract: 'I give you a RM{a} note. The rope costs RM{b}. How many ringgit change do I give back?',
+        subtract: 'You pay me RM{a}. The rope costs RM{b}. How many ringgit change do I give back?',
       },
       thanks: ['Thank you, hero! Here is a sailor\u2019s outfit from my sea chest.', 'Open your wardrobe to wear it. Fair winds!'],
     },
@@ -121,8 +123,8 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
       thanks: ['Thank you, hero! My clock runs true again.', 'Touch the lamp to light the lighthouse. It is your light now, more than mine.'],
     },
     sums: {
-      money: { hint: { add: 'Put the two amounts together and count the ringgit.', subtract: 'Take the price away from the note. What is left is the change.' },
-        concept: { add: 'Adding money: start at the first amount and count on the second.', subtract: 'Change is what is left after you pay. Count back from the note.' } },
+      money: { hint: { add: 'Put the two amounts together and count the ringgit.', subtract: 'Take the price away from the money you paid. What is left is the change.' },
+        concept: { add: 'Adding money: start at the first amount and count on the second.', subtract: 'Change is what is left after you pay. Count back from the money you paid.' } },
       clock: { hint: { add: 'Count on the hours round the clock face, one at a time.', subtract: 'Count the hours from now up to the time on the lamp.' },
         concept: { add: 'Later in the day: start at the first hour and count on.', subtract: 'The wait is the gap between the two hours. Count it on your fingers.' } },
     },
@@ -134,6 +136,7 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
         ['A note in a bottle: \u2018When the Heron preens, its chest shows. Strike then, and every blow counts double. Its ring only reaches so far: run beyond the edge.\u2019'],
       ],
     },
+    tide: { low: 'Low tide', high: 'High tide', still: 'Tide: still' },
     board: { title: 'Tide Board', ebb: 'Ebb song, low tide: {order}', flood: 'Flood song, high tide: {order} (the ebb song backwards)', hint: 'Ring the bells in order. A wrong bell only starts again.' },
     labels: { beach: 'Way out', village: 'Stilt village', flats: 'Tidepool Flats', wreck: 'Shipwrecks', island: 'Lighthouse', cave: 'Sea cave' },
     mapTitle: 'Moonwake Shore map',
@@ -146,7 +149,7 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
     objective: {
       gate: 'Ikut cahaya Batu Hati ke Pantai Moonwake',
       findMak: 'Berbual dengan Tuan Pelabuhan Mak Long',
-      readBoard: 'Baca Papan Air Pasang di kampung',
+      readBoard: 'Baca Papan Pasang Surut di kampung',
       ringFirst: 'Bunyikan loceng pelampung: {order} ({n}/{total})',
       ringOther: 'Sekarang bunyikan lagu air yang satu lagi: {order} ({n}/{total})',
       heron: 'Jalan Bulan sudah timbul! Hadapi Bangau Pemanggil Air',
@@ -160,9 +163,9 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
     },
     toast: {
       enter: 'Selamat datang ke Pantai Moonwake! Air pasang sudah berhenti.',
-      boardRead: 'Papan Air Pasang menunjukkan dua lagu. Air surut: {ebb}. Air pasang: loceng yang sama secara terbalik, {flood}.',
+      boardRead: 'Papan Pasang Surut menunjukkan dua lagu. Air surut: {ebb}. Air pasang: loceng yang sama secara terbalik, {flood}.',
       bellRight: 'Loceng itu berbunyi betul!',
-      bellWrong: 'Bukan loceng itu. Bunyinya hilang. Cuba lagi ikut susunan Papan Air Pasang!',
+      bellWrong: 'Bukan loceng itu. Bunyinya hilang. Cuba lagi ikut susunan Papan Pasang Surut!',
       ebb: 'Lagu air surut! Air mengalir pergi. Air surut: tanah lumpur terbuka!',
       flood: 'Lagu air pasang! Air naik. Air pasang: feri terapung ke kapal karam!',
       sameLow: 'Air sudah surut.',
@@ -192,7 +195,7 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
       name: 'Mak Long',
       intro: [
         'Ahoi! Saya Mak Long, tuan pelabuhan Pantai Moonwake. Lihatlah pelabuhan saya: air pasang sudah berhenti, dan rumah api gelap.',
-        'Tiga pelampung loceng terapung di tepi jeti. Bunyikan ikut susunan yang betul dan laut akan bergerak semula. Papan Air Pasang di kampung menunjukkan lagunya.',
+        'Tiga pelampung loceng terapung di tepi jeti. Bunyikan ikut susunan yang betul dan laut akan bergerak semula. Papan Pasang Surut di kampung menunjukkan lagunya.',
         'Sementara kamu di sini, tolong cari kaca laut di pantai. Saya perlukan lapan keping untuk tingkap tanglung saya, dan saya akan bayar kamu!',
       ],
       waiting: [
@@ -202,7 +205,7 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
       report: ['Lapan keping! Lihatlah betapa berkilau!', 'Biar saya kira bayaran kamu, dan kamu boleh mengira bersama saya.'],
       ask: {
         add: 'Kaca itu bernilai RM{a}, dan kerang itu bernilai RM{b}. Berapa ringgit semuanya?',
-        subtract: 'Saya beri kamu wang kertas RM{a}. Tali itu berharga RM{b}. Berapa ringgit baki yang saya pulangkan?',
+        subtract: 'Kamu bayar saya RM{a}. Tali itu berharga RM{b}. Berapa ringgit baki yang saya pulangkan?',
       },
       thanks: ['Terima kasih, wira! Ini pakaian pelaut dari peti laut saya.', 'Buka almari pakaian untuk memakainya. Selamat belayar!'],
     },
@@ -222,8 +225,8 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
       thanks: ['Terima kasih, wira! Jam saya tepat semula.', 'Sentuh lampu untuk menyalakan rumah api. Ia cahaya kamu sekarang, lebih daripada cahaya saya.'],
     },
     sums: {
-      money: { hint: { add: 'Gabungkan kedua-dua jumlah dan kira ringgitnya.', subtract: 'Tolak harga daripada wang kertas. Yang tinggal ialah bakinya.' },
-        concept: { add: 'Menambah wang: mulakan dengan jumlah pertama dan kira terus jumlah kedua.', subtract: 'Baki ialah yang tinggal selepas membayar. Kira mengundur dari wang kertas.' } },
+      money: { hint: { add: 'Gabungkan kedua-dua jumlah dan kira ringgitnya.', subtract: 'Tolak harga daripada wang yang dibayar. Yang tinggal ialah bakinya.' },
+        concept: { add: 'Menambah wang: mulakan dengan jumlah pertama dan kira terus jumlah kedua.', subtract: 'Baki ialah yang tinggal selepas membayar. Kira mengundur dari wang yang dibayar.' } },
       clock: { hint: { add: 'Kira jam demi jam di sekeliling muka jam.', subtract: 'Kira jam dari sekarang sehingga waktu pada lampu.' },
         concept: { add: 'Lebih lewat pada hari itu: mulakan dengan jam pertama dan kira terus.', subtract: 'Masa menunggu ialah jarak antara dua jam itu. Kira dengan jari.' } },
     },
@@ -235,7 +238,8 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
         ['Nota dalam botol: \u2018Apabila Bangau membersihkan bulu, dadanya kelihatan. Seranglah ketika itu, dan setiap pukulan dikira dua kali. Cincinnya hanya sampai sejauh itu: berlarilah melepasi tepinya.\u2019'],
       ],
     },
-    board: { title: 'Papan Air Pasang', ebb: 'Lagu air surut: {order}', flood: 'Lagu air pasang: {order} (lagu air surut secara terbalik)', hint: 'Bunyikan loceng ikut susunan. Loceng yang salah hanya mula semula.' },
+    tide: { low: 'Air surut', high: 'Air pasang', still: 'Air: berhenti' },
+    board: { title: 'Papan Pasang Surut', ebb: 'Lagu air surut: {order}', flood: 'Lagu air pasang: {order} (lagu air surut secara terbalik)', hint: 'Bunyikan loceng ikut susunan. Loceng yang salah hanya mula semula.' },
     labels: { beach: 'Jalan keluar', village: 'Kampung atas tiang', flats: 'Tanah Lumpur', wreck: 'Kapal Karam', island: 'Rumah Api', cave: 'Gua laut' },
     mapTitle: 'Peta Pantai Moonwake',
     elderToShore: ['Cahaya Batu Hati mengalir menyusuri sungai ke laut, wira. Jauh di pesisir, air pasang sudah berhenti dan rumah api gelap.', 'Ikut jalan sungai di sebelah timur kampung. Pantai Moonwake memerlukan kamu!'],
@@ -276,3 +280,6 @@ export function shoreObjective(lang: Lang, s: ShoreState, o: { inside: boolean; 
   if (s.bottles.length < BOTTLE_COUNT) return fill(t.bottles, { n: s.bottles.length, total: BOTTLE_COUNT });
   return t.peace;
 }
+
+/** v2.30: "1 hours" reads wrong to a child; the clock riddle fills in a number, so a lone hour must be singular (Malay "jam" never changes). */
+export const singularHour = (text: string): string => text.replace(/\b1 hours\b/g, '1 hour');

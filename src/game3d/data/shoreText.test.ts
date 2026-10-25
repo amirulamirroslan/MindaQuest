@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SHORE_TEXT, ebbText, floodText, shoreFill, shoreObjective } from './shoreText';
+import { SHORE_TEXT, ebbText, floodText, shoreFill, shoreObjective, singularHour } from './shoreText';
 import { TEXT } from './woodsText';
 import { BOTTLE_COUNT, CRAB_COUNT, GLASS_COUNT, GULL_COUNT, collectGlass, defeatHeron, keeperAsked, lightLamp, makAsked, newShore, readBottle, type ShoreState } from '../systems/shoreQuest';
 
@@ -53,4 +53,30 @@ describe('moonwake shore text', () => {
     }
   });
   it('fills numbers and leaves unknown holes visible', () => { expect(shoreFill('{n} of {total}', { n: 2, total: 5 })).toBe('2 of 5'); expect(shoreFill('{x}', {})).toBe('{x}'); });
+});
+
+describe('v2.30 wording', () => {
+  for (const lang of ['en', 'ms'] as const) {
+    it(`${lang}: the change question never mentions a banknote (RM3, RM7 and RM13 notes do not exist)`, () => {
+      const t = SHORE_TEXT[lang];
+      const money = [t.mak.ask.subtract, t.sums.money.hint.subtract, t.sums.money.concept.subtract].join(' ').toLowerCase();
+      expect(money).not.toMatch(/\bnote\b|wang kertas/);
+    });
+    it(`${lang}: the tide line has three non-empty states`, () => {
+      for (const k of ['low', 'high', 'still'] as const) expect(SHORE_TEXT[lang].tide[k].length).toBeGreaterThan(2);
+      expect(SHORE_TEXT[lang].tide.low).not.toBe(SHORE_TEXT[lang].tide.high);
+    });
+  }
+  it('ms: the Tide Board is called the tides board, not the high-tide board', () => {
+    expect(SHORE_TEXT.ms.board.title).toBe('Papan Pasang Surut');
+  });
+});
+
+describe('singularHour', () => {
+  it('fixes only a lone hour', () => {
+    expect(singularHour('It rings again 1 hours later.')).toBe('It rings again 1 hour later.');
+    expect(singularHour('It rings again 3 hours later.')).toBe('It rings again 3 hours later.');
+    expect(singularHour('It rings again 11 hours later.')).toBe('It rings again 11 hours later.');
+    expect(singularHour('Loceng berbunyi lagi 1 jam kemudian.')).toBe('Loceng berbunyi lagi 1 jam kemudian.');
+  });
 });

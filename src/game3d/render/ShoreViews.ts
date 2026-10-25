@@ -7,7 +7,7 @@
  * chest pearl glows and rings while it preens, which is exactly when blows count double.
  */
 import {
-  AdditiveBlending, BoxGeometry, ConeGeometry, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshLambertMaterial, SphereGeometry, TorusGeometry, type BufferGeometry,
+  AdditiveBlending, BoxGeometry, ConeGeometry, CylinderGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshLambertMaterial, RingGeometry, SphereGeometry, TorusGeometry, type BufferGeometry,
 } from 'three';
 import type { Enemy, EnemyState } from '../systems/enemies';
 import { bump, easeInOut, easeOutCubic } from '../systems/charAnim';
@@ -98,15 +98,21 @@ function heronWingGeometry(s: -1 | 1): BufferGeometry {
 }
 
 // ================================================================================================================================ the Pebble Crab
+/** One ring shared by every crab (a geometry owns GPU buffers; this keeps respawning crabs from adding more). */
+let crabRingGeo: RingGeometry | null = null;
+const crabRingGeometry = (): RingGeometry => (crabRingGeo ??= new RingGeometry(0.9, 1.32, 28));
 const CRAB_HUES = [{ a: 1, b: 1 }, { a: 1.06, b: 0.9 }, { a: 0.9, b: 1.08 }];
 export class CrabView extends EnemyView {
   protected readonly mass = 1.4;
   private readonly shell = new Group(); private readonly under = new Group(); private readonly claws: Group[] = [];
   private readonly sc: number; private readonly ph: number;
   private prev: EnemyState = 'idle'; private notice = 0; private lastHits = 0; private pain = 0; private dustT = 0; private open = 0; private claw = 0;
+  /** v2.30: a gold ring on the ground that fades in while the shell is open, so the opening (the moment to strike) can be seen from any camera angle. */
+  private readonly openRing = new Mesh(crabRingGeometry(), new MeshBasicMaterial({ color: 0xff9d12, transparent: true, opacity: 0, depthWrite: false, side: DoubleSide }));
   constructor(enemy: Enemy, outlines = true) {
     super(enemy);
     this.outlineOn = outlines;
+    this.openRing.rotation.x = -Math.PI / 2; this.openRing.position.y = 0.07; this.openRing.visible = false; this.root.add(this.openRing);
     const id = enemy.tag ?? enemy.id, hue = CRAB_HUES[Math.abs(id) % CRAB_HUES.length];
     this.sc = 0.92 + ((Math.abs(id) * 29) % 9) / 9 * 0.2; this.ph = id * 2.3;
     this.root.add(blobShadow(0.9 * this.sc));
@@ -125,6 +131,7 @@ export class CrabView extends EnemyView {
     this.pain = Math.max(0, this.pain - dt); const pk = this.pain / 0.3;
     // the shell: shut (and tipped forward over the face) normally; popped open and tilted up while the crab is dizzy
     this.open = damp(this.open, st === 'recover' ? 1 : 0, dt, 12);
+    this.openRing.visible = this.open > 0.02; if (this.openRing.visible) { (this.openRing.material as MeshBasicMaterial).opacity = 0.95 * this.open * (0.82 + 0.18 * Math.sin(t * 9)); this.openRing.scale.setScalar(this.sc * (1 + 0.06 * Math.sin(t * 9))); }
     let y = 0, yaw = 0, roll = 0, pitch = 0, squash = 1, clawUp = 0, sidestep = 0;
     switch (st) {
       case 'idle': squash = 1 + Math.sin(t * 2 + ph) * 0.03; yaw = Math.sin(t * 0.7 + ph) * 0.35; clawUp = 0.15 * Math.max(0, Math.sin(t * 1.3 + ph)); break;

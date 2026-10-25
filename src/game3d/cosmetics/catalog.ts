@@ -40,7 +40,7 @@ export type Access =
 export type WeaponClass = 'sword1h' | 'axe1h' | 'dagger' | 'sword2h' | 'axe2h' | 'staff' | 'wand';
 export type OffhandKind = 'shield' | 'weapon' | 'book' | 'lantern';
 export type ShoeProp = 'shoe-trail' | 'shoe-cuff' | 'shoe-fur' | 'shoe-leaf' | 'shoe-guard' | 'shoe-moon';
-export type ProcProp = 'leaf-crown' | 'lantern' | 'sea-crown' | 'lighthouse-lantern' | ShoeProp;
+export type ProcProp = 'leaf-crown' | 'lantern' | 'sea-crown' | 'sailor-cap' | 'lighthouse-lantern' | ShoeProp;
 
 export interface CosmeticItem {
   id: string;
@@ -80,7 +80,7 @@ export const CATALOG: readonly CosmeticItem[] = [
   { id: 'outfit-ranger', slot: 'outfit', name: n('Ranger Tunic', 'Tunik Renjer'), rarity: 'common', collection: 'starter', access: free, kit: set('Rogue', BODY) },
   { id: 'outfit-moon', slot: 'outfit', name: n('Moon Robe', 'Jubah Bulan'), rarity: 'common', collection: 'moon-mages', access: free, kit: set('Mage', BODY) },
   { id: 'outfit-clan', slot: 'outfit', name: n('Clan Furs', 'Bulu Puak'), rarity: 'uncommon', collection: 'highland', access: lvl(3), kit: set('Barbarian', BODY) },
-  { id: 'sailor-jacket', slot: 'outfit', name: n('Sailor Jacket', 'Jaket Pelaut'), rarity: 'rare', collection: 'shore', access: { type: 'quest', unlock: 'sailor-jacket' }, kit: set('Knight', BODY), variantTint: 0x5c8fd0 },
+  { id: 'sailor-jacket', slot: 'outfit', name: n('Sailor Jacket', 'Jaket Pelaut'), rarity: 'rare', collection: 'shore', access: { type: 'quest', unlock: 'sailor-jacket' }, kit: set('Knight', BODY), variantTint: 0x2f6fc0 },
   { id: 'outfit-guard', slot: 'outfit', name: n('Silver Guard Armour', 'Perisai Pengawal Perak'), rarity: 'rare', collection: 'silver-guard', access: lvl(4), kit: set('Knight', BODY) },
   // ---- trousers (the kit boots come with them; boot colour and shoe shape are the separate Shoes tab)
   { id: 'legs-ranger', slot: 'legs', name: n('Ranger Trousers', 'Seluar Renjer'), rarity: 'common', collection: 'starter', access: free, kit: set('Rogue', LEGS) },
@@ -102,10 +102,10 @@ export const CATALOG: readonly CosmeticItem[] = [
   { id: 'hat-moon', slot: 'headgear', name: n('Moon Hat', 'Topi Bulan'), rarity: 'epic', collection: 'moon-mages', access: lvl(5), kit: ['Mage_Hat'] },
   { id: 'hat-sun', slot: 'headgear', name: n('Sunlit Wizard Hat', 'Topi Ahli Sihir Mentari'), rarity: 'legendary', collection: 'moon-mages', access: { type: 'premium', sku: 'hat-sun' }, kit: ['Mage_Hat'], variantTint: 0xffc83a },
   // ---- Crystal Hollow reward (v2.22): the Moon Hat shape in glacier blue, earned by touching the Heartstone
-  { id: 'crystal-hat', slot: 'headgear', name: n('Crystal Hat', 'Topi Hablur'), rarity: 'legendary', collection: 'hollow', access: { type: 'quest', unlock: 'crystal-hat' }, kit: ['Mage_Hat'], variantTint: 0x7fe3ff },
+  { id: 'crystal-hat', slot: 'headgear', name: n('Crystal Hat', 'Topi Hablur'), rarity: 'legendary', collection: 'hollow', access: { type: 'quest', unlock: 'crystal-hat' }, kit: ['Mage_Hat'], variantTint: 0x35c8ff },
   // ---- Moonwake Shore (v2.29)
   { id: 'sea-crown', slot: 'headgear', name: n('Sea-glass Crown', 'Mahkota Kaca Laut'), rarity: 'epic', collection: 'shore', access: lvl(10), kit: [], proc: 'sea-crown' },
-  { id: 'sailor-cap', slot: 'headgear', name: n('Sailor Cap', 'Topi Pelaut'), rarity: 'rare', collection: 'shore', access: { type: 'quest', unlock: 'sailor-cap' }, kit: ['Knight_Helmet'], variantTint: 0xe6efff },
+  { id: 'sailor-cap', slot: 'headgear', name: n('Sailor Cap', 'Topi Pelaut'), rarity: 'rare', collection: 'shore', access: { type: 'quest', unlock: 'sailor-cap' }, kit: [], proc: 'sailor-cap' },
   // ---- capes and backs
   { id: 'cape-ranger', slot: 'cape', name: n('Ranger Cape', 'Jubah Renjer'), rarity: 'common', collection: 'rangers', access: free, kit: ['Rogue_Cape'] },
   { id: 'cape-guard', slot: 'cape', name: n('Guard Cape', 'Jubah Pengawal'), rarity: 'uncommon', collection: 'silver-guard', access: lvl(3), kit: ['Knight_Cape'] },

@@ -9,8 +9,11 @@ import type { Riddle } from '../systems/runePuzzle';
  * `ChallengeSession` rules as the Rune Stone: hints are free, wrong answers explain the idea and never cost XP, and after two slips the
  * answer is shown, so the conversation can always finish. Only addition and taking away (shown with small petal pictures) are supported.
  */
+import { clockFaceSvg } from './clockFace';
 export interface DialogueQuestion {
   riddle: Riddle;
+  /** v2.30: 'clock' draws clock faces and 'money' draws coins above the answers, instead of petals. */
+  theme?: 'money' | 'clock';
   ask: string; hintLabel: string; hint: string; concept: string; tryAgain: string; right: string; rightFirst: string; revealed: string; explain: string;
   onEvent?(e: 'right' | 'wrong' | 'hint'): void;
   onResolved(res: SessionResult): void;
@@ -41,7 +44,7 @@ export class Hud3D {
   private s: Strings;
   private hearts: HTMLElement[] = [];
   private levelText: HTMLElement; private xpFill: HTMLElement; private xpText: HTMLElement; private objective: HTMLElement;
-  private questBar: HTMLElement; private questBarFill: HTMLElement; private tileEls: Partial<Record<'bag' | 'hero', HTMLButtonElement>> = {};
+  private tideLine!: HTMLElement; private tideKey = ''; private questBar: HTMLElement; private questBarFill: HTMLElement; private tileEls: Partial<Record<'bag' | 'hero', HTMLButtonElement>> = {};
   private questBox: HTMLElement; private questLabel: HTMLElement; private questToggle: HTMLButtonElement; private lastObjective = '';
   private tileLabels: { el: HTMLElement; key: 'menu' | 'map' | 'bag' | 'hero' | 'sound' }[] = []; private soundIcon!: HTMLElement;
   private heartsBox: HTMLElement; private portraitBox: HTMLElement;
@@ -86,6 +89,7 @@ export class Hud3D {
     this.questLabel = el('span', 'mq-q-label', qh, this.s.ui.quest);
     this.questToggle = el('button', 'mq-q-toggle', qh); this.questToggle.type = 'button'; this.questToggle.innerHTML = icon('chevron', 18); this.questToggle.setAttribute('aria-label', this.s.ui.collapse); this.questToggle.setAttribute('aria-expanded', 'true');
     this.objective = el('div', 'mq-q-text', this.questBox);
+    this.tideLine = el('div', 'mq-q-tide', this.questBox); this.tideLine.style.display = 'none';
     this.questBar = el('div', 'mq-q-bar', this.questBox); this.questBarFill = el('div', 'mq-q-barfill', this.questBar); this.questBar.style.display = 'none';
     const toggleQuest = (e: Event) => { e.stopPropagation(); e.preventDefault(); const c = this.questBox.classList.toggle('mq-collapsed'); this.questToggle.setAttribute('aria-expanded', String(!c)); };
     this.questBox.addEventListener('pointerdown', toggleQuest);
@@ -157,6 +161,17 @@ export class Hud3D {
     this.root.classList.add('mq-boss-on');
     this.bossBox.style.display = 'block'; this.bossName.textContent = name ?? this.s.ui.boss; this.bossFill.style.width = `${Math.max(0, Math.min(1, frac)) * 100}%`;
   }
+  /** v2.30: the shore's tide as words plus a wave-and-arrow glyph (null hides it). Low = waves low with a down arrow, high = waves high with an up arrow. */
+  setTide(text: string | null, tide: 'low' | 'high' | 'still' = 'still'): void {
+    const key = text === null ? '' : `${tide}|${text}`; if (this.tideKey === key) return; this.tideKey = key;
+    if (text === null) { this.tideLine.style.display = 'none'; return; }
+    const arrow = tide === 'low' ? '<path d="M5 3v7m-2.5-2.5L5 10l2.5-2.5"/>' : tide === 'high' ? '<path d="M5 10V3M2.5 5.5L5 3l2.5 2.5"/>' : '';
+    const wave = (y: number): string => `<path d="M11 ${y}q2-2.4 4 0t4 0t4 0"/>`;
+    const water = tide === 'high' ? wave(6) + wave(9.5) : tide === 'low' ? wave(11) : wave(8.5);
+    this.tideLine.className = `mq-q-tide mq-tide-${tide}`; this.tideLine.style.display = 'flex'; this.tideLine.textContent = '';
+    const g = el('span', 'mq-q-tide-i', this.tideLine); g.setAttribute('aria-hidden', 'true'); g.innerHTML = `<svg viewBox="0 0 26 14" width="30" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${arrow}${water}</svg>`;
+    el('span', 'mq-q-tide-t', this.tideLine, text);
+  }
   toast(text: string, ms = 3600, ic?: IconName): void {
     const t = el('div', 'mq-panel mq-toast', this.toasts);
     if (ic) { t.classList.add('mq-toast-i'); el('span', 'mq-toast-ic', t).innerHTML = icon(ic, 20); }
@@ -205,10 +220,18 @@ export class Hud3D {
     const q = this.qSpec, ses = this.qSession; if (!q || !ses) return;
     const r = q.riddle; this.dlgName.textContent = this.speaker; this.dlgText.textContent = q.ask;
     const box = this.dlgQ; box.textContent = ''; box.style.display = 'block';
-    if ((r.kind === 'add' || r.kind === 'subtract') && r.a + (r.kind === 'add' ? r.b : 0) <= 12) { // small pictures help the youngest children count
+    if (q.theme === 'clock' && (r.kind === 'add' || r.kind === 'subtract')) { // v2.30: a real clock face, so a whole-hour riddle can be seen as well as read
+      const pics = el('div', 'mq-dq-pics mq-dq-clocks', box); pics.setAttribute('aria-hidden', 'true');
+      const face = (hour: number): void => { const f = el('span', 'mq-dq-clock', pics); f.innerHTML = `${clockFaceSvg(hour)}<b>${hour}:00</b>`; };
+      if (r.kind === 'add') { face(r.a); el('span', 'mq-dq-sign', pics, `+${r.b}`); el('span', 'mq-dq-sign mq-dq-hrs', pics).innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>'; }
+      else { face(r.b); el('span', 'mq-dq-sign', pics, '\u2192'); face(r.a); }
+    } else if ((r.kind === 'add' || r.kind === 'subtract') && r.a + (r.kind === 'add' ? r.b : 0) <= 12) { // small pictures help the youngest children count
       const pics = el('div', 'mq-dq-pics', box); pics.setAttribute('aria-hidden', 'true');
+      if (q.theme === 'money') { const coins = (n: number, cls: string): void => { for (let k = 0; k < n; k++) el('span', `mq-dq-coin ${cls}`, pics, 'RM'); }; if (r.kind === 'add') { coins(r.a, ''); el('span', 'mq-dq-sign', pics, '+'); coins(r.b, 'mq-dq-alt'); } else { coins(r.a - r.b, ''); coins(r.b, 'mq-dq-away'); } }
+      else {
       const petals = (n: number, cls: string): void => { for (let k = 0; k < n; k++) el('span', `mq-dq-petal ${cls}`, pics).innerHTML = icon('petal', 20); };
       if (r.kind === 'add') { petals(r.a, ''); el('span', 'mq-dq-sign', pics, '+'); petals(r.b, 'mq-dq-alt'); } else { petals(r.a - r.b, ''); petals(r.b, 'mq-dq-away'); }
+      }
     }
     const opts = el('div', 'mq-dq-opts', box);
     r.options.forEach((t, k) => {

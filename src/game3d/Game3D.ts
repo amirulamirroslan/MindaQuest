@@ -57,7 +57,7 @@ import { ShoreNpc } from './render/ShoreViews';
 import { Group, Mesh, TorusGeometry } from 'three';
 import { Kit, M, mat } from './render/env/Structures';
 import { glowSprite } from './render/common';
-import { SHORE_TEXT, ebbText, floodText, shoreFill, shoreObjective } from './data/shoreText';
+import { singularHour, SHORE_TEXT, ebbText, floodText, shoreFill, shoreObjective } from './data/shoreText';
 import {
   BOARD_RANGE, BUOYS as SHORE_BUOYS, BUOY_SPOTS, GLASS_RANGE, GLASS_SPOTS, KEEPER_POS, LAMP_POS, MAK_POS, SHORE_EXIT, SHORE_SPAWN, TIDE_BOARD_POS, BOTTLE_SPOTS,
   clampToArena as clampShoreArena, clampToFloor as clampShoreFloor, floorRayClear as shoreRayClear, onFloor as onShoreFloor, type BuoyId,
@@ -351,6 +351,7 @@ export class Game3D {
     this.hud.setLevel(levelForXp(this.progress.xp), xpIntoLevel(this.progress.xp));
     this.hud.setObjective(this.objectiveText());
     this.hud.setObjectiveProgress(this.objectiveCount());
+    this.hud.setTide(this.area === 'shore' ? this.st.tide[this.shore.tide] : null, this.area === 'shore' ? this.shore.tide : 'still');
     this.hud.setHearts(this.vitals.hp, this.vitals.maxHp); this.lastHearts = this.vitals.hp;
     this.heroPanel?.refresh();
   }
@@ -471,7 +472,7 @@ export class Game3D {
     this.noteStart(riddle);
     const p = this.strings.puzzle, v = riddle as Extract<Riddle, { kind: 'add' | 'subtract' }>;
     return {
-      riddle, ask: fill(ask[kind], { a: v.a, b: v.b }), hintLabel: p.hintLabel, hint: theme ? SHORE_TEXT[this.lang].sums[theme].hint[kind] : p.hint[kind], concept: theme ? SHORE_TEXT[this.lang].sums[theme].concept[kind] : p.concept[kind], tryAgain: p.tryAgain,
+      riddle, theme, ask: singularHour(fill(ask[kind], { a: v.a, b: v.b })), hintLabel: p.hintLabel, hint: theme ? SHORE_TEXT[this.lang].sums[theme].hint[kind] : p.hint[kind], concept: theme ? SHORE_TEXT[this.lang].sums[theme].concept[kind] : p.concept[kind], tryAgain: p.tryAgain,
       right: p.correct, rightFirst: p.correctFirst, revealed: fill(p.revealed, { n: answerText(riddle) }), explain: explanationText(this.lang, explain(riddle)),
       onEvent: e => this.sfx.play(e === 'right' ? 'right' : e === 'wrong' ? 'wrong' : 'tap', e === 'hint' ? 1 : 0),
       onResolved: res => this.noteDone(riddle, res),

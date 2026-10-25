@@ -456,6 +456,11 @@ h2.mq-with-ic{display:flex}
 .mq-dq-pics{display:flex;flex-wrap:wrap;gap:2px 3px;align-items:center;justify-content:center;margin:2px 0 8px}
 .mq-dq-petal{display:inline-flex;line-height:0}.mq-dq-alt{filter:hue-rotate(60deg)}.mq-dq-away{opacity:.35}
 .mq-dq-sign{font-weight:900;font-size:20px;color:var(--mq-gold-hi);padding:0 4px}
+.mq-dq-clocks{gap:6px 8px}.mq-dq-clock{display:inline-flex;flex-direction:column;align-items:center;line-height:1}.mq-dq-clock b{font-size:13px;color:#fff4d6;margin-top:2px;letter-spacing:.5px}
+.mq-ck-face{fill:#fff8e6;stroke:#6b4a2b;stroke-width:3}.mq-ck-tick{stroke:#6b4a2b;stroke-width:1.6;stroke-linecap:round}.mq-ck-num{font:800 9px/1 system-ui,sans-serif;fill:#4a3220;text-anchor:middle;dominant-baseline:middle}
+.mq-ck-hr{stroke:#c0392b;stroke-width:4.2;stroke-linecap:round}.mq-ck-min{stroke:#2d5aa0;stroke-width:2.6;stroke-linecap:round}.mq-ck-pin{fill:#4a3220}
+.mq-dq-hrs{display:inline-flex;line-height:0}
+.mq-dq-coin{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#e0a93a 70%);border:2px solid #a8741c;font:900 9px/1 system-ui,sans-serif;color:#7a4e0c}
 .mq-dq-opts{display:flex;gap:10px;justify-content:center}
 .mq-dq-opt{flex:1 1 0;max-width:140px;min-height:52px;font:inherit;font-weight:900;font-size:24px;border-radius:14px;border:3px solid var(--mq-gold-lo);background:#fff8e6;color:#3a2212;cursor:pointer;touch-action:manipulation}
 .mq-dq-opt.mq-right{background:#bff0c8;border-color:#2e9b57}.mq-dq-opt.mq-wrong{opacity:.4}
@@ -585,3 +590,8 @@ h2.mq-with-ic{display:flex}
 .mq-pad-desktop .mq-btn-talk{right:66px;bottom:158px;width:64px;height:64px}
 .mq-btn.mq-cooling::after{inset:0}
 .mq-btn:not(.mq-cooling){box-shadow:0 0 0 1.5px var(--mq-edge-dark),0 4px 0 rgba(0,0,0,.38),inset 0 1.5px 0 rgba(255,226,140,.28),0 0 12px rgba(255,224,102,.35)}
+
+/* v2.30: the shore's tide line inside the quest card */
+.mq-q-tide{align-items:center;gap:6px;margin-top:5px;padding:3px 8px 3px 6px;border-radius:9px;font-weight:800;font-size:13px;background:rgba(20,40,60,.35);color:#d8f0ff}
+.mq-q-tide-i{display:inline-flex;line-height:0}.mq-tide-high{color:#bfe0ff;background:rgba(40,90,150,.45)}.mq-tide-low{color:#ffe9b8;background:rgba(120,80,30,.4)}
+.mq-collapsed .mq-q-tide{display:none!important}

@@ -129,3 +129,18 @@ describe('the shipped kit asset', () => {
     const tris = [...meshes].length; expect(tris).toBeGreaterThanOrEqual(45);
   });
 });
+
+describe('v2.30 shore cosmetics', () => {
+  it('the Sailor Cap is its own code-made cap (no longer the spiked Knight Helmet) and keeps its slot, id and unlock', () => {
+    const cap = itemById('sailor-cap')!;
+    expect(cap.slot).toBe('headgear'); expect(cap.proc).toBe('sailor-cap'); expect(cap.kit).toEqual([]);
+  });
+  it('the Sailor jacket and trousers carry a colour of their own, which the rig now applies to outfit and legs', () => {
+    expect(itemById('sailor-jacket')!.variantTint).toBeGreaterThan(0); expect(itemById('sailor-trousers')!.variantTint).toBeGreaterThan(0);
+    expect(itemById('sailor-jacket')!.slot).toBe('outfit'); expect(itemById('sailor-trousers')!.slot).toBe('legs');
+  });
+  it('the Crystal Hat tint is saturated enough to read as crystal (the old 0x7fe3ff came out grey-blue)', () => {
+    const t = itemById('crystal-hat')!.variantTint!; const r = (t >> 16) & 255;
+    expect(r).toBeLessThan(0x60);
+  });
+});
