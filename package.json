@@ -1,6 +1,7 @@
 {
   "name": "mindaquest",
   "private": true,
+  "engines": { "node": ">=20" },
   "version": "0.1.0",
   "type": "module",
   "scripts": {
