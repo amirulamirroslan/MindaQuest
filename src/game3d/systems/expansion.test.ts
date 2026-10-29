@@ -126,3 +126,23 @@ describe('the world is laid out for future regions', () => {
   it('gives every region name in both languages', () => { for (const r of REGIONS) { expect(r.name.en.length).toBeGreaterThan(2); expect(r.name.ms.length).toBeGreaterThan(2); } });
   it('has people far enough apart', () => { for (const a of PEOPLE) for (const b of PEOPLE) if (a !== b) expect(Math.hypot(a.at.x - b.at.x, a.at.z - b.at.z)).toBeGreaterThan(30); });
 });
+
+describe('v2.34 Deeper Woods', () => {
+  const ids = ['marsh', 'rise', 'falls'];
+  it('adds three zones, the last one hidden, each with its own trail and clearing', () => {
+    for (const id of ids) expect(ZONES.find(z => z.id === id), id).toBeTruthy();
+    expect(ZONES.find(z => z.id === 'falls')!.hidden).toBe(true); expect(ZONES.find(z => z.id === 'marsh')!.hidden).toBe(false);
+    for (const p of ['marsh-trail', 'rise-trail', 'falls-trail']) expect(PATHS.some(q => q.id === p), p).toBe(true);
+    for (const c of ['firefly-marsh', 'sunstone-rise', 'whispering-falls']) expect(CLEARINGS.some(q => q.id === c), c).toBe(true);
+  });
+  it('keeps the old pickup ids: the first 14 acorns and 7 chests are where they were', () => {
+    expect(ACORN_SPOTS.slice(0, 3)).toEqual([{ x: 16, z: 89 }, { x: -16, z: 84 }, { x: 10, z: 56 }]);
+    expect(CHEST_SPOTS[6]).toMatchObject({ zone: 'kite' });
+    expect(CHEST_SPOTS.slice(7).map(c => c.zone)).toEqual(['marsh', 'rise', 'falls']);
+  });
+  it('puts every new pickup inside its zone and on ground the hero can walk to', () => {
+    for (const c of CHEST_SPOTS.slice(7)) { const z = ZONES.find(q => q.id === c.zone)!; expect(Math.hypot(c.x - z.x, c.z - z.z), c.zone).toBeLessThan(z.r); }
+    for (const m of expansionMustReach()) if (/^(zone (marsh|rise|falls)|acorn (1[4-9])|chest [7-9])$/.test(m.name)) expect(isClear(grid, m.p.x, m.p.z, HERO), m.name).toBe(true);
+  });
+});
+

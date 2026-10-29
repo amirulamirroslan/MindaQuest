@@ -1,17 +1,17 @@
 /** Words for the Crystal Hollow (v2.22), English and Bahasa Melayu. The same-shape test in hollowText.test.ts checks both languages. */
 import type { Lang } from './woodsText';
 import { ECHO_ORDER, type EchoColor } from '../systems/hollowLayout';
-import { SHARDLING_COUNT, SHARD_COUNT, TABLET_COUNT, type HollowState } from '../systems/hollowQuest';
+import { GLOWCAP_COUNT, SHARDLING_COUNT, SHARD_COUNT, TABLET_COUNT, onlySecretShardLeft, secretOpen, type HollowState } from '../systems/hollowQuest';
 
 export interface HollowStrings {
   name: string;
   colour: Record<EchoColor, string>;
   /** Objective card lines. `{order}` is the colours in order, `{n}` and `{total}` are numbers. */
-  objective: { findMural: string; strike: string; warden: string; heart: string; shards: string; peace: string; gate: string; shardlings: string; glimReport: string; tablets: string };
+  objective: { findMural: string; strike: string; warden: string; heart: string; shards: string; peace: string; gate: string; shardlings: string; glimReport: string; tablets: string; glowcaps: string; nook: string };
   toast: {
     enter: string; muralRead: string; shard: string; allShards: string; echoRight: string; echoWrong: string; doorOpen: string; glowcap: string; secretOpen: string;
     heartDone: string; back: string;
-    shardling: string; allShardlings: string; wardenWakes: string; weakSpot: string; wardenDown: string; heartGuarded: string; glimMet: string; glimDone: string; tablet: string; allTablets: string;
+    shardling: string; allShardlings: string; wardenWakes: string; weakSpot: string; wardenDown: string; heartGuarded: string; glimMet: string; glimDone: string; tablet: string; allTablets: string; perfect: string;
   };
   ui: { use: string; touchHeart: string; strike: string };
   /** v2.28: the Hollow Warden's health bar name. */
@@ -19,9 +19,9 @@ export interface HollowStrings {
   /** v2.28: Glim the lantern sprite. `ask` is the sum he sets once every Shardling is calm (`{a}` and `{b}`). */
   glim: { name: string; intro: string[]; waiting: string[]; report: string[]; ask: { add: string; subtract: string }; thanks: string[] };
   /** v2.28: the three Moon Tablets: a name and lines each (they teach the Warden's moves). */
-  tablet: { name: string; lines: [string[], string[], string[]] };
+  tablet: { name: string; lines: string[][] };
   /** Names on the Hollow map. */
-  labels: Record<'gate' | 'prism' | 'grotto' | 'pool' | 'door' | 'heart' | 'pink' | 'nook' | 'mural' | 'glim', string>;
+  labels: Record<'gate' | 'prism' | 'grotto' | 'pool' | 'door' | 'heart' | 'pink' | 'nook' | 'mural' | 'glim' | 'lake' | 'gallery' | 'vault', string>;
   mapTitle: string;
   /** Elder Tok Wan's two lines once the woods quest is complete (replacing the old gate lines). */
   elderComplete: string[];
@@ -43,6 +43,8 @@ export const HOLLOW_TEXT: Record<Lang, HollowStrings> = {
       shardlings: 'Calm the Shardlings for Glim ({n}/{total})',
       glimReport: 'Tell Glim the Shardlings are calm',
       tablets: 'Find the hidden Moon Tablets ({n}/{total})',
+      glowcaps: 'One Moon Shard is sealed away. Light the glowing mushrooms in the grotto ({n}/{total})',
+      nook: 'The secret nook is open! Fetch the last Moon Shard',
     },
     toast: {
       enter: 'Welcome to the Crystal Hollow! Something here has gone dark.',
@@ -66,6 +68,7 @@ export const HOLLOW_TEXT: Record<Lang, HollowStrings> = {
       glimDone: 'Glim is happy! His lantern glows.',
       tablet: 'Moon Tablet {n}/{total}',
       allTablets: 'All the Moon Tablets! You know the cave\'s secrets.',
+      perfect: 'Crystal Hollow 100%! You found every secret.',
     },
     ui: { use: 'Use', touchHeart: 'Touch the Heartstone', strike: 'Strike' },
     boss: 'Hollow Warden',
@@ -83,9 +86,11 @@ export const HOLLOW_TEXT: Record<Lang, HollowStrings> = {
         ['Carved long ago: \'When the Warden spreads its light in a ring, run beyond the edge, or roll through it as it lands.\''],
         ['Carved long ago: \'Crystals fall where you stand, so keep moving. The long beam is slow to aim, so step to the side.\''],
         ['Carved long ago: \'When the Warden grows tired, its dimmed heart shows. Strike then, and every blow counts double.\''],
+        ['Carved long ago: \'The moon was never lost. It sank into the lake, and the stars on the water are its light.\''],
+        ['Carved long ago: \'Behind the Heart, the keepers kept what the cave loved best. Whoever calms the Heart may look.\''],
       ],
     },
-    labels: { gate: 'Way out', prism: 'Moon Prism', grotto: 'Glowcap Grotto', pool: 'Echo Pool', door: 'Heart Door', heart: 'Heartstone', pink: 'Pink nook', nook: 'Secret nook', mural: 'Mural', glim: 'Glim' },
+    labels: { gate: 'Way out', prism: 'Moon Prism', grotto: 'Glowcap Grotto', pool: 'Echo Pool', door: 'Heart Door', heart: 'Heartstone', pink: 'Pink nook', nook: 'Secret nook', mural: 'Mural', glim: 'Glim', lake: 'Starlit Lake', gallery: 'Moonstone Gallery', vault: 'Moon Vault' },
     mapTitle: 'Crystal Hollow map',
     elderComplete: ['The Moonlit Gate shines for you, hero. Beyond it lies the Crystal Hollow, a cave that has been dark for a hundred years.', 'Wear the Mossy Cloak if you like, and step through when you are ready!'],
     elderAfter: ['The Crystal Hollow is glowing again. You did that, hero!', 'The Moonlit Gate is always open for you. Moon Shards still hide in the cave, if you want to hunt for them.'],
@@ -104,6 +109,8 @@ export const HOLLOW_TEXT: Record<Lang, HollowStrings> = {
       shardlings: 'Tenangkan Si Serpih untuk Glim ({n}/{total})',
       glimReport: 'Beritahu Glim bahawa Si Serpih sudah tenang',
       tablets: 'Cari Papan Bulan yang tersembunyi ({n}/{total})',
+      glowcaps: 'Satu Serpihan Bulan terkunci. Nyalakan cendawan bercahaya di gua ({n}/{total})',
+      nook: 'Ruang rahsia sudah terbuka! Ambil Serpihan Bulan yang terakhir',
     },
     toast: {
       enter: 'Selamat datang ke Gua Hablur! Sesuatu di sini sudah menjadi gelap.',
@@ -127,6 +134,7 @@ export const HOLLOW_TEXT: Record<Lang, HollowStrings> = {
       glimDone: 'Glim gembira! Tanglungnya menyala.',
       tablet: 'Papan Bulan {n}/{total}',
       allTablets: 'Semua Papan Bulan! Kamu tahu rahsia gua ini.',
+      perfect: 'Gua Hablur 100%! Kamu jumpa semua rahsia.',
     },
     ui: { use: 'Guna', touchHeart: 'Sentuh Batu Hati', strike: 'Ketuk' },
     boss: 'Penjaga Gua',
@@ -144,9 +152,11 @@ export const HOLLOW_TEXT: Record<Lang, HollowStrings> = {
         ['Diukir lama dahulu: \'Apabila Penjaga menebarkan cahaya berbentuk cincin, berlarilah melepasi tepinya, atau bergulinglah melaluinya ketika ia mendarat.\''],
         ['Diukir lama dahulu: \'Hablur jatuh di tempat kamu berdiri, jadi terus bergerak. Pancaran panjang lambat disasarkan, jadi melangkahlah ke tepi.\''],
         ['Diukir lama dahulu: \'Apabila Penjaga letih, hatinya yang malap kelihatan. Seranglah ketika itu, dan setiap pukulan dikira dua kali.\''],
+        ['Diukir lama dahulu: \'Bulan tidak pernah hilang. Ia tenggelam ke dalam tasik, dan bintang di air itu ialah cahayanya.\''],
+        ['Diukir lama dahulu: \'Di belakang Hati, para penjaga menyimpan apa yang paling disayangi gua ini. Sesiapa yang menenangkan Hati boleh melihatnya.\''],
       ],
     },
-    labels: { gate: 'Jalan keluar', prism: 'Prisma Bulan', grotto: 'Gua Cendawan', pool: 'Kolam Gema', door: 'Pintu Hati', heart: 'Batu Hati', pink: 'Ruang merah jambu', nook: 'Ruang rahsia', mural: 'Mural', glim: 'Glim' },
+    labels: { gate: 'Jalan keluar', prism: 'Prisma Bulan', grotto: 'Gua Cendawan', pool: 'Kolam Gema', door: 'Pintu Hati', heart: 'Batu Hati', pink: 'Ruang merah jambu', nook: 'Ruang rahsia', mural: 'Mural', glim: 'Glim', lake: 'Tasik Bintang', gallery: 'Galeri Batu Bulan', vault: 'Peti Besi Bulan' },
     mapTitle: 'Peta Gua Hablur',
     elderComplete: ['Pintu Cahaya Bulan bersinar untuk kamu, wira. Di sebaliknya ada Gua Hablur, gua yang sudah gelap seratus tahun.', 'Pakailah Jubah Berlumut jika mahu, dan masuklah apabila kamu sudah bersedia!'],
     elderAfter: ['Gua Hablur bercahaya semula. Kamulah yang melakukannya, wira!', 'Pintu Cahaya Bulan sentiasa terbuka untuk kamu. Serpihan Bulan masih tersembunyi di dalam gua, jika kamu mahu mencarinya.'],
@@ -172,6 +182,7 @@ export function hollowObjective(lang: Lang, h: HollowState, o: { inside: boolean
   if (!h.heartDone) return t.heart;
   // the story is done: the optional jobs, Glim's request first (only if he has been met), then shards, then tablets
   if (h.glim === 1) return h.shardlings.length < SHARDLING_COUNT ? fill(t.shardlings, { n: h.shardlings.length, total: SHARDLING_COUNT }) : t.glimReport;
+  if (onlySecretShardLeft(h)) return secretOpen(h) ? t.nook : fill(t.glowcaps, { n: h.glowcaps.length, total: GLOWCAP_COUNT });
   if (h.shards.length < SHARD_COUNT) return fill(t.shards, { n: h.shards.length, total: SHARD_COUNT });
   if (h.tablets.length < TABLET_COUNT) return fill(t.tablets, { n: h.tablets.length, total: TABLET_COUNT });
   return t.peace;

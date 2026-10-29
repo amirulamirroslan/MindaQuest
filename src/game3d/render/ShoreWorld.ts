@@ -220,7 +220,7 @@ export class ShoreWorld {
     const skirt = lam(0x6a4e32);
     for (const gp of GROUND) {
       const g = this.groundGroup(gp.part), s = gp.shape;
-      const material = ['hub', 'shell-pier', 'wave-pier', 'north-strip', 'star-jetty', 'shell-end', 'wave-end', 'star-end', 'ferry-deck'].includes(gp.part) ? deck : gp.part === 'causeway' || gp.part === 'causeway-foot' ? stone : gp.part === 'flats' || gp.part === 'flats-path' || gp.part === 'beach' || gp.part === 'beach-path' ? sand : gp.part === 'wreck' ? shingle : gp.part === 'island' ? lam(0x9aa88a) : wet;
+      const material = ['hub', 'shell-pier', 'wave-pier', 'north-strip', 'star-jetty', 'shell-end', 'wave-end', 'star-end', 'ferry-deck'].includes(gp.part) ? deck : gp.part === 'causeway' || gp.part === 'causeway-foot' ? stone : gp.part === 'flats' || gp.part === 'flats-path' || gp.part === 'beach' || gp.part === 'beach-path' || gp.part === 'cove' || gp.part === 'cove-path' || gp.part === 'tern' || gp.part === 'tern-bar' ? sand : gp.part === 'wreck' ? shingle : gp.part === 'island' || gp.part === 'beacon' || gp.part === 'beacon-path' ? lam(0x9aa88a) : wet;
       for (const m of this.slab(s, material, skirt, DEEP)) { m.receiveShadow = true; g.add(m); }
       if (gp.part === 'causeway') this.addCausewayPosts(g);
     }

@@ -106,7 +106,7 @@ describe('moonwake shore quest: Mak Long, the Heron, the keeper and the lamp', (
     for (let i = 0; i < GULL_COUNT; i++) { const g = calmGull(s, i); s = g.state; take(g.xp); }
     for (let i = 0; i < BOTTLE_COUNT; i++) { const g = readBottle(s, i); s = g.state; take(g.xp); }
     take(makClaim(s).xp); s = makClaim(s).state; const h = defeatHeron(s); s = h.state; take(h.xp); take(keeperClaim(s).xp); s = keeperClaim(s).state; take(lightLamp(s).xp);
-    expect(xp).toBe(SHORE_TOTAL_XP); expect(SHORE_TOTAL_XP).toBe(462);
+    expect(xp).toBe(SHORE_TOTAL_XP); expect(SHORE_TOTAL_XP).toBe(505); // 462 before v2.33 added three bottles, two crabs and two gulls
   });
 });
 

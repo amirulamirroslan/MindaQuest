@@ -39,7 +39,7 @@ describe('the three errands', () => {
   });
   it('opens the thorns only after Kak Lumut is thanked', () => { let s: WildsState = { ...finish('lumut'), lumut: 1 }; expect(thornsOpen(s)).toBe(false); s = claim(s, 'lumut').state; expect(thornsOpen(s)).toBe(true); });
   it('pays small item rewards', () => { expect(collectPumpkin(newWilds(), 0).xp).toBe(ITEM_XP); expect(lightLantern(newWilds(), 1).xp).toBe(ITEM_XP); expect(readTablet(newWilds(), 2).xp).toBe(5); });
-  it('keeps the item counts the text and the world agree on', () => { expect([ACORN_SPOTS.length, PUMPKIN_SPOTS.length, PEARL_SPOTS.length, LANTERN_SPOTS.length, TABLET_SPOTS.length, CHEST_SPOTS.length]).toEqual([14, 4, 4, 3, 3, 7]); });
+  it('keeps the item counts the text and the world agree on', () => { expect([ACORN_SPOTS.length, PUMPKIN_SPOTS.length, PEARL_SPOTS.length, LANTERN_SPOTS.length, TABLET_SPOTS.length, CHEST_SPOTS.length]).toEqual([20, 4, 4, 3, 3, 10]); }); // v2.34 added 6 acorns and 3 chests (the errands are unchanged, so nobody's thank-you resets)
 });
 
 describe('saving and old saves', () => {
@@ -50,7 +50,7 @@ describe('saving and old saves', () => {
   });
   it('repairs corrupt or hand-edited saves', () => {
     const st = store(); st.data[WILDS_STORAGE_KEY] = '{nope'; expect(loadWilds(st)).toEqual(newWilds());
-    const bad = sanitizeWilds({ zones: ['mirror', 'mirror', 'zzz', 4], acorns: [1, 1, 50, 'a', -2], chests: [0, 9], tani: 2, lumut: 7, din: 'x', explored: 'zz' });
+    const bad = sanitizeWilds({ zones: ['mirror', 'mirror', 'zzz', 4], acorns: [1, 1, 50, 'a', -2], chests: [0, 99], tani: 2, lumut: 7, din: 'x', explored: 'zz' });
     expect(bad.zones).toEqual(['mirror']); expect(bad.acorns).toEqual([1]); expect(bad.chests).toEqual([0]); expect(bad.tani).toBe(1); expect(bad.lumut).toBe(0); expect(bad.din).toBe(0); expect(bad.explored).toBe('');
     expect(sanitizeWilds(null)).toEqual(newWilds()); expect(sanitizeWilds('x')).toEqual(newWilds());
   });

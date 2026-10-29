@@ -25,8 +25,10 @@ export const COMPLETION_REWARD = 'mossy-cloak';
 export const HOLLOW_REWARD = 'crystal-hat';
 /** v2.28: the cosmetic id given for defeating the Hollow Warden. */
 export const WARDEN_REWARD = 'warden-mantle';
+/** v2.31.3: the cosmetic id given for finding everything in the Crystal Hollow (see hollowPerfect in systems/hollowQuest.ts). */
+export const HOLLOW_PERFECT_REWARD = 'heartstone-cloak';
 /** Every cosmetic the Hollow may hand out through a `hollow` event. */
-export const HOLLOW_REWARDS: readonly string[] = [HOLLOW_REWARD, WARDEN_REWARD];
+export const HOLLOW_REWARDS: readonly string[] = [HOLLOW_REWARD, WARDEN_REWARD, HOLLOW_PERFECT_REWARD];
 /** v2.29 Moonwake Shore rewards: the Sailor set (for the eight pieces of sea-glass, handed over by Harbour-master Mak Long) and the Lighthouse Lantern (for lighting the lamp). */
 export const SAILOR_REWARDS: readonly string[] = ['sailor-jacket', 'sailor-trousers', 'sailor-cap'];
 export const LANTERN_REWARD = 'lighthouse-lantern';

@@ -6,7 +6,9 @@ import type { Vec2 } from './movement3d';
 import { MIRROR } from './expansionShape';
 
 export type ZoneId =
-  | 'hearthfield' | 'orchard' | 'kite' | 'lookout' | 'mirror' | 'thicket' | 'heartwood' | 'grove' | 'cave' | 'steps' | 'moon' | 'mist';
+  | 'hearthfield' | 'orchard' | 'kite' | 'lookout' | 'mirror' | 'thicket' | 'heartwood' | 'grove' | 'cave' | 'steps' | 'moon' | 'mist'
+  // v2.34 "Deeper Woods": Firefly Marsh (south-east of Hearthfield), Sunstone Rise (beyond Mirror Pond) and the hidden Whispering Falls (west of the Old Steps)
+  | 'marsh' | 'rise' | 'falls';
 export interface ZoneDef { id: ZoneId; x: number; z: number; r: number; /** Hidden zones are not on the map until found, and pay more. */ hidden: boolean; xp: number }
 export const ZONES: readonly ZoneDef[] = [
   { id: 'orchard', x: 0, z: 52, r: 9, hidden: false, xp: 5 },
@@ -21,6 +23,9 @@ export const ZONES: readonly ZoneDef[] = [
   { id: 'steps', x: 0, z: -78, r: 15, hidden: false, xp: 5 },
   { id: 'moon', x: 30, z: -54, r: 8, hidden: false, xp: 5 },
   { id: 'mist', x: 62, z: -66, r: 7, hidden: false, xp: 5 },
+  { id: 'marsh', x: 42, z: 78, r: 8.5, hidden: false, xp: 5 },
+  { id: 'rise', x: 80, z: -28, r: 8, hidden: false, xp: 5 },
+  { id: 'falls', x: -34, z: -82, r: 8, hidden: true, xp: 10 },
 ];
 export const ZONE_COUNT = ZONES.length;
 export const zoneById = (id: string): ZoneDef | undefined => ZONES.find(z => z.id === id);
@@ -40,6 +45,8 @@ export const PASSES: readonly PassDef[] = [
 export const ACORN_SPOTS: readonly Vec2[] = [
   { x: 16, z: 89 }, { x: -16, z: 84 }, { x: 10, z: 56 }, { x: -42, z: 56 }, { x: -60, z: 68 }, { x: 50, z: 48 }, { x: 66, z: 62 },
   { x: 54, z: 4 }, { x: 80, z: 22 }, { x: -58, z: 14 }, { x: -74, z: 6 }, { x: -40, z: -28 }, { x: 24, z: -49 }, { x: 12, z: -72 },
+  // v2.34: two in each new zone (ids 14 to 19; new ones go at the END so saved ids keep their meaning)
+  { x: 38, z: 74 }, { x: 46, z: 80 }, { x: 76, z: -22 }, { x: 85, z: -30 }, { x: -30, z: -77 }, { x: -38, z: -84 },
 ];
 export const PUMPKIN_SPOTS: readonly Vec2[] = [{ x: -13, z: 82 }, { x: 14, z: 70 }, { x: 5, z: 90 }, { x: -14, z: 66 }];
 export const PEARL_SPOTS: readonly Vec2[] = [{ x: 62, z: 9 }, { x: 74, z: 19 }, { x: 70, z: 6 }, { x: 63, z: 20 }];
@@ -55,6 +62,10 @@ export const CHEST_SPOTS: readonly (Vec2 & { zone: ZoneId; xp: number })[] = [
   { x: -6, z: -88, zone: 'steps', xp: 25 },
   { x: -52, z: -61, zone: 'grove', xp: 30 },
   { x: -50, z: 67, zone: 'kite', xp: 15 },
+  // v2.34
+  { x: 44, z: 74, zone: 'marsh', xp: 20 },
+  { x: 80, z: -33, zone: 'rise', xp: 25 },
+  { x: -30, z: -87, zone: 'falls', xp: 30 },
 ];
 export const CHEST_COUNT = CHEST_SPOTS.length;
 
@@ -69,6 +80,7 @@ export const PEOPLE: readonly PersonDef[] = [
 export const SIGN_SPOTS: readonly (Vec2 & { id: string })[] = [
   { id: 'orchard', x: 3, z: 42 }, { id: 'pond', x: 34, z: 12.5 }, { id: 'thicket', x: -40, z: 11 }, { id: 'steps', x: 2, z: -42 },
   { id: 'mist', x: 16, z: -49 }, { id: 'fern', x: -27.6, z: -15.4 }, { id: 'lookout', x: 18, z: 61 },
+  { id: 'marsh', x: 19, z: 73.5 }, { id: 'rise', x: 79, z: 4 },
 ];
 
 /** The thorn barrier of the Heartwood shortcut: opens when Kak Lumut has been helped. */

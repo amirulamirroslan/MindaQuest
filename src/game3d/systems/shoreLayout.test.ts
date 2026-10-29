@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { isClear } from './colliders';
 import {
-  BOTTLE_SPOTS, BUOYS, BUOY_SPOTS, CRAB_SPOTS, EBB_SONG, FLOOD_SONG, GLASS_SPOTS, GROUND, GULL_SPOTS, HERON_POS, LAMP_POS, SHORE_EXIT, SHORE_SPAWN, WALL_MARGIN,
+  BOTTLE_SPOTS, BOTTLE_NEEDS, CRAB_NEEDS, GULL_NEEDS, BUOYS, BUOY_SPOTS, CRAB_SPOTS, EBB_SONG, FLOOD_SONG, GLASS_SPOTS, GROUND, GULL_SPOTS, HERON_POS, LAMP_POS, SHORE_EXIT, SHORE_SPAWN, WALL_MARGIN,
   buildShoreDecor, clampToArena, clampToFloor, floorDistance, floorRayClear, onFloor, shoreGrid, shoreMustReach, type ShoreGates, HERON_CHECKPOINT, KEEPER_POS, MAK_POS, TIDE_BOARD_POS,
 } from './shoreLayout';
 
 const HERO_R = 0.38;
 /** Flood fill over the ground at 0.5 m, using exactly the rules the game applies (ground margin + solid circles). */
 function reachable(gates: ShoreGates) {
-  const grid = shoreGrid(), res = 0.5, x0 = -56, z0 = -70, w = 230, h = 220;
+  const grid = shoreGrid(), res = 0.5, x0 = -56, z0 = -70, w = 230, h = 260;
   const open = new Uint8Array(w * h);
   for (let iz = 0; iz < h; iz++) for (let ix = 0; ix < w; ix++) { const x = x0 + ix * res, z = z0 + iz * res; if (onFloor(gates, x, z, WALL_MARGIN) && isClear(grid, x, z, HERO_R)) open[iz * w + ix] = 1; }
   const cell = (p: { x: number; z: number }) => Math.round((p.z - z0) / res) * w + Math.round((p.x - x0) / res);
@@ -47,6 +47,14 @@ describe('moonwake shore layout', () => {
     expect(reachable({ tide: 'still', causeway: true })(island)).toBe(true); expect(reachable({ tide: 'high', causeway: true })(island)).toBe(true);
     expect(reachable({ tide: 'still', causeway: true })(cave)).toBe(false); expect(reachable({ tide: 'low', causeway: true })(cave)).toBe(true);   // the sea cave is dry only at low tide
   });
+  it('v2.33: Pearl Cove is always open, Tern Rock only at high tide, Beacon Rock only once the causeway is up', () => {
+    const cove = { x: -34, z: 41 }, tern = { x: 35, z: 41 }, beacon = { x: 25, z: -54 };
+    for (const g of [STILL, LOW, HIGH]) expect(reachable(g)(cove), JSON.stringify(g)).toBe(true);
+    expect(reachable(STILL)(tern)).toBe(false); expect(reachable(LOW)(tern)).toBe(false); expect(reachable(HIGH)(tern)).toBe(true);
+    for (const g of [STILL, LOW, HIGH]) expect(reachable(g)(beacon), JSON.stringify(g)).toBe(false);
+    for (const g of [{ tide: 'still', causeway: true }, { tide: 'high', causeway: true }] as ShoreGates[]) expect(reachable(g)(beacon), JSON.stringify(g)).toBe(true);
+    expect(BOTTLE_SPOTS).toHaveLength(6); expect(CRAB_SPOTS).toHaveLength(7); expect(GULL_SPOTS).toHaveLength(6);
+  });
   it('keeps the village, the Tide Board, Mak Long and all three bell-buoys on the always-open ground', () => {
     const open = reachable(STILL);
     for (const t of shoreMustReach()) if (/^(board|mak|buoy|exit|glass [01])/.test(t.name)) expect(open(t.p), t.name).toBe(true);
@@ -56,12 +64,12 @@ describe('moonwake shore layout', () => {
     const grid = shoreGrid();
     const spots: [string, { x: number; z: number }, ShoreGates][] = [
       ...GLASS_SPOTS.map((p, i): [string, { x: number; z: number }, ShoreGates] => [`glass ${i}`, p, i < 2 ? STILL : i < 5 ? LOW : i < 7 ? HIGH : { tide: 'low', causeway: true }]),
-      ...CRAB_SPOTS.map((p, i): [string, { x: number; z: number }, ShoreGates] => [`crab ${i}`, p, i < 3 ? LOW : HIGH]),
-      ...GULL_SPOTS.map((p, i): [string, { x: number; z: number }, ShoreGates] => [`gull ${i}`, p, i === 0 ? LOW : i < 3 ? HIGH : { tide: 'still', causeway: true }]),
+      ...CRAB_SPOTS.map((p, i): [string, { x: number; z: number }, ShoreGates] => [`crab ${i}`, p, CRAB_NEEDS[i]]),
+      ...GULL_SPOTS.map((p, i): [string, { x: number; z: number }, ShoreGates] => [`gull ${i}`, p, GULL_NEEDS[i]]),
     ];
     for (const [name, p, g] of spots) { expect(onFloor(g, p.x, p.z, WALL_MARGIN), name).toBe(true); expect(isClear(grid, p.x, p.z, HERO_R), name).toBe(true); }
     for (const b of BUOYS) expect(onFloor(STILL, BUOY_SPOTS[b].x, BUOY_SPOTS[b].z, 0.7), b).toBe(true);
-    for (const p of BOTTLE_SPOTS) expect(floorDistance({ tide: 'low', causeway: true }, p.x, p.z)).toBeLessThan(-0.6);
+    BOTTLE_SPOTS.forEach((p, i) => expect(floorDistance({ tide: BOTTLE_NEEDS[i].tide === 'still' ? 'low' : BOTTLE_NEEDS[i].tide, causeway: true }, p.x, p.z), `bottle ${i}`).toBeLessThan(-0.6));
     expect(onFloor({ tide: 'still', causeway: true }, HERON_POS.x, HERON_POS.z, 2)).toBe(true);
     expect(onFloor({ tide: 'still', causeway: true }, HERON_CHECKPOINT.x, HERON_CHECKPOINT.z, 1)).toBe(true);
     expect(onFloor({ tide: 'still', causeway: true }, LAMP_POS.x, LAMP_POS.z, 1)).toBe(true); expect(onFloor({ tide: 'still', causeway: true }, KEEPER_POS.x, KEEPER_POS.z, 1)).toBe(true);

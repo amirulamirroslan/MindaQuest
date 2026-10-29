@@ -17,7 +17,7 @@ import { smoothstep } from '../systems/worldShape';
 import { ColliderGrid } from '../systems/colliders';
 import type { Quality } from '../systems/quality';
 import {
-  DOOR_POS, ECHO_COLORS, ECHO_ORDER, ECHO_SPOTS, GLOWCAP_SPOTS, GROTTO, HEART_CHAMBER, HEART_POS, HOLLOW_EXIT, HUB, MURAL_POS, POOL_ROOM, POOL_WATER, PRISM_POS,
+  DOOR_POS, ECHO_COLORS, ECHO_ORDER, ECHO_SPOTS, GALLERY_ROOM, GLOWCAP_SPOTS, GROTTO, LAKE_ROOM, VAULT_ROOM, HEART_CHAMBER, HEART_POS, HOLLOW_EXIT, HUB, MURAL_POS, POOL_ROOM, POOL_WATER, PRISM_POS,
   SECRET_COLLIDERS, SHARD_SPOTS, STALAGMITES, TABLET_SPOTS, buildHollowDecor, floorDistance, hollowGrid, type EchoColor, type HollowGates,
 } from '../systems/hollowLayout';
 import type { SkyLook } from '../systems/lighting3d';
@@ -238,7 +238,7 @@ export class HollowWorld {
 
   // ------------------------------------------------------------------------------------------------------------ building
   private buildFloor(cell: number): void {
-    const x0 = -53, x1 = 49, z0 = -43, z1 = 46;
+    const x0 = -53, x1 = 49, z0 = -61, z1 = 46;
     const sx = Math.round((x1 - x0) / cell), sz = Math.round((z1 - z0) / cell);
     const g = new PlaneGeometry(x1 - x0, z1 - z0, sx, sz); g.rotateX(-Math.PI / 2); g.translate((x0 + x1) / 2, 0, (z0 + z1) / 2);
     const pos = g.attributes.position, col = new Float32Array(pos.count * 3), c = new Color();
@@ -248,7 +248,8 @@ export class HollowWorld {
       pos.setY(i, sd <= 0 ? 0 : 3.6 * smoothstep(0, 2.6, sd) + 0.8 * smoothstep(2.6, 7, sd));
       const big = fbm2(x * 0.09 + 3, z * 0.09 - 5, 3), fine = noise2(x * 0.8, z * 0.8), slab = noise2(Math.floor(x * 1.4) * 1.9, Math.floor(z * 1.4) * 1.3);
       c.copy(floorB).lerp(floorA, smoothstep(0.3, 0.75, big)).lerp(path, smoothstep(0.55, 0.9, slab) * 0.35).multiplyScalar(0.92 + 0.16 * fine);
-      const dHub = Math.hypot(x - HUB.x, z - HUB.z), dGr = Math.hypot(x - GROTTO.x, z - GROTTO.z), dPo = Math.hypot(x - POOL_ROOM.x, z - POOL_ROOM.z), dHe = Math.hypot(x - HEART_CHAMBER.x, z - HEART_CHAMBER.z);
+      const dHub = Math.hypot(x - HUB.x, z - HUB.z), dGr = Math.hypot(x - GROTTO.x, z - GROTTO.z), dPo = Math.hypot(x - POOL_ROOM.x, z - POOL_ROOM.z), dHe = Math.hypot(x - HEART_CHAMBER.x, z - HEART_CHAMBER.z), dLk = Math.hypot(x - LAKE_ROOM.x, z - LAKE_ROOM.z), dVa = Math.hypot(x - VAULT_ROOM.x, z - VAULT_ROOM.z), dGa = Math.hypot(x - GALLERY_ROOM.x, z - GALLERY_ROOM.z);
+      c.lerp(blueC, 0.45 * (1 - smoothstep(2, 8, dLk))).lerp(pinkC, 0.4 * (1 - smoothstep(2, 7, dVa))).lerp(moss, 0.3 * (1 - smoothstep(2, 7.5, dGa)));
       c.lerp(moss, 0.5 * (1 - smoothstep(3, 9, dGr)) * (0.5 + 0.5 * fine)).lerp(blueC, 0.4 * (1 - smoothstep(2, 9, dPo))).lerp(pinkC, 0.4 * (1 - smoothstep(2, 8.5, dHe)));
       c.lerp(path, 0.28 * (1 - smoothstep(0, 4, dHub)));
       // dark rim where the floor meets the wall, and solid dark rock beyond it

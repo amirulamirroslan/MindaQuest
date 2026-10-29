@@ -11,6 +11,10 @@
  *   Glowcap Grotto - Lantern Cavern - Echo Pool
  *   (secret nook)    |  \ Pink nook
  *                  Entry landing + the way back to the woods
+ *
+ * v2.32 "Deeper Hollow": three more rooms. The Moon Vault lies north, behind the Heart Chamber (so the Heart Door and the Warden gate it);
+ * the Starlit Lake opens south-east off the Lantern Cavern, and the Moonstone Gallery south-west past the Pink nook. Each has a Moon Shard,
+ * and the Gallery and the Vault each carry a Moon Tablet.
  */
 import { ColliderGrid, type Collider } from './colliders';
 import type { Vec2 } from './movement3d';
@@ -41,6 +45,10 @@ export const POOL_ROOM = { x: 32, z: -5, r: 8.5 };
 export const PINK_NOOK = { x: -15, z: 27, r: 4.2 };
 export const POOL_WATER = { x: 30, z: -6, r: 3.2 };
 export const SECRET_ROOM = { x: -41, z: -22, r: 3.2 };
+/** v2.32: the Starlit Lake cavern (south-east), the Moonstone Gallery (south-west) and the Moon Vault (north, behind the Heart Chamber). */
+export const LAKE_ROOM = { x: 28, z: 27, r: 8 };
+export const GALLERY_ROOM = { x: -35, z: 31, r: 7.5 };
+export const VAULT_ROOM = { x: 0, z: -46, r: 7 };
 
 /** The three Echo Crystals. Struck in the order the mural shows, they open the Heart Door. */
 export const ECHO_SPOTS: Readonly<Record<EchoColor, Vec2>> = {
@@ -53,9 +61,10 @@ export const ECHO_RANGE = 2.6;
 /** Three glowing mushrooms in the grotto. Touch all three and the crystal wall over the secret nook shatters. */
 export const GLOWCAP_SPOTS: readonly Vec2[] = [{ x: -25.5, z: -12.5 }, { x: -31.5, z: -16 }, { x: -37, z: -6.5 }];
 export const GLOWCAP_RANGE = 1.9;
-/** Moon Shards: two in plain sight, two tucked away, one in the secret nook. */
+/** Moon Shards: two in plain sight, two tucked away, one in the secret nook (index 4); v2.32 adds one in each new room (5 lake, 6 gallery, 7 vault). New ones go at the END so saved ids keep their meaning. */
 export const SHARD_SPOTS: readonly Vec2[] = [
   { x: 4.2, z: 35.2 }, { x: -7.2, z: 6.2 }, { x: -19.3, z: 7.0 }, { x: 31.5, z: -12.1 }, { x: -41.2, z: -21.8 },
+  { x: 31, z: 30 }, { x: -38, z: 33.5 }, { x: 0, z: -47.5 },
 ];
 export const SHARD_RANGE = 1.3;
 
@@ -72,10 +81,10 @@ export const SHARDLING_SPOTS: readonly Vec2[] = [
   { x: -22.5, z: 4 }, { x: -29.5, z: -9.5 }, { x: -34, z: -12 },
 ];
 /** Three carved Moon Tablets, each hidden in a corner of a different part of the cave. The last is in the secret nook. */
-export const TABLET_SPOTS: readonly Vec2[] = [{ x: -13, z: 28.9 }, { x: 35, z: -11.2 }, { x: -42.8, z: -23 }];
+export const TABLET_SPOTS: readonly Vec2[] = [{ x: -13, z: 28.9 }, { x: 35, z: -11.2 }, { x: -42.8, z: -23 }, { x: -33.5, z: 26.2 }, { x: 4.2, z: -49.5 }];
 export const TABLET_RANGE = 2.3;
 /** A spot beside each tablet that the hero can stand on to read it (used by the reachability test): each is on the cave side of its tablet. */
-export const TABLET_APPROACH: readonly Vec2[] = [{ x: 1.1, z: -0.6 }, { x: -1.1, z: 0.6 }, { x: 1.1, z: 0.5 }];
+export const TABLET_APPROACH: readonly Vec2[] = [{ x: 1.1, z: -0.6 }, { x: -1.1, z: 0.6 }, { x: 1.1, z: 0.5 }, { x: 0, z: 1.3 }, { x: -1.2, z: 0.6 }];
 /** The Hollow Warden sleeps in front of the Heartstone. It cannot leave the Heart Chamber (see `clampToArena`). */
 export const WARDEN_POS: Vec2 = { x: 0, z: -23.2 };
 /** Where the hero starts again after being knocked out in the corridor or chamber behind the open Heart Door (instead of walking back from the cave mouth). */
@@ -89,6 +98,10 @@ export const FLOOR: readonly FloorShape[] = [
   path({ x: 9, z: 10 }, { x: 19, z: 11 }, 2.1), path({ x: 19, z: 11 }, { x: 26, z: 4 }, 2.1), path({ x: 26, z: 4 }, { x: 29, z: -1 }, 2.1), disc(POOL_ROOM.x, POOL_ROOM.z, POOL_ROOM.r),
   path({ x: 0, z: 3 }, { x: 0, z: -19 }, 2.4), disc(HEART_CHAMBER.x, HEART_CHAMBER.z, HEART_CHAMBER.r),
   path({ x: -35, z: -14 }, { x: -39, z: -19 }, 1.7), disc(SECRET_ROOM.x, SECRET_ROOM.z, SECRET_ROOM.r),
+  // v2.32: the Starlit Lake (off the hub), the Moonstone Gallery (past the Pink nook) and the Moon Vault (behind the Heart Chamber)
+  path({ x: 8, z: 19 }, { x: 22, z: 26 }, 2.1), disc(LAKE_ROOM.x, LAKE_ROOM.z, LAKE_ROOM.r),
+  path({ x: -18, z: 28 }, { x: -30, z: 31 }, 2.0), disc(GALLERY_ROOM.x, GALLERY_ROOM.z, GALLERY_ROOM.r),
+  path({ x: 0, z: -33 }, { x: 0, z: -40 }, 2.4), disc(VAULT_ROOM.x, VAULT_ROOM.z, VAULT_ROOM.r),
 ];
 
 /** Signed distance to one shape: negative inside. */
@@ -144,6 +157,8 @@ export const STALAGMITES: readonly Collider[] = [
   { x: -27.5, z: -4.2, r: 0.8 }, { x: -36.5, z: -10.5, r: 0.7 }, { x: -24.5, z: -7.5, r: 0.6 },
   { x: 26.8, z: -9.5, r: 0.8 }, { x: 37.2, z: -8.8, r: 0.7 }, { x: 25.8, z: 0.8, r: 0.6 },
   { x: -5.8, z: -22, r: 0.8 }, { x: 5.8, z: -22, r: 0.8 }, { x: -6.2, z: -30, r: 0.9 }, { x: 6.2, z: -30, r: 0.9 },
+  // v2.32: the new rooms
+  { x: 23.5, z: 30, r: 0.8 }, { x: 34, z: 23.8, r: 0.7 }, { x: -40.5, z: 28, r: 0.8 }, { x: -31, z: 35.2, r: 0.6 }, { x: -4.3, z: -44, r: 0.8 }, { x: 5, z: -42.5, r: 0.7 },
 ];
 /** Solid scenery that is always there: the Moon Prism, the pool, the pedestals, the crystals and a few stalagmites that shape the paths. */
 export const STATIC_COLLIDERS: readonly Collider[] = [
@@ -167,7 +182,7 @@ export interface HollowDecor { rocks: WallRock[]; crystals: CrystalSpec[] }
 /** Colour family of a spot: the hub glows cyan, the grotto green, the pool blue, the Heart Chamber pink-gold. 0..4 indexes the palette in the renderer. */
 export function hueIndexAt(x: number, z: number): number {
   const d = (c: { x: number; z: number }) => Math.hypot(x - c.x, z - c.z);
-  const rooms: [number, number][] = [[d(HUB), 0], [d(GROTTO), 1], [d(POOL_ROOM), 2], [d(HEART_CHAMBER), 3], [d(PINK_NOOK), 4]];
+  const rooms: [number, number][] = [[d(HUB), 0], [d(GROTTO), 1], [d(POOL_ROOM), 2], [d(HEART_CHAMBER), 3], [d(PINK_NOOK), 4], [d(LAKE_ROOM), 2], [d(GALLERY_ROOM), 4], [d(VAULT_ROOM), 3]];
   return rooms.reduce((a, b) => (b[0] < a[0] ? b : a))[1];
 }
 
@@ -176,14 +191,14 @@ export function buildHollowDecor(seed = 2022): HollowDecor {
   const rocks: WallRock[] = [], crystals: CrystalSpec[] = [];
   // wall rocks: every cell just outside the floor edge gets a rock, plus a taller second row behind it, so the chambers read as carved out of stone
   const step = 1.3;
-  for (let gx = -52; gx <= 48; gx += step) for (let gz = -42; gz <= 45; gz += step) {
+  for (let gx = -52; gx <= 48; gx += step) for (let gz = -60; gz <= 45; gz += step) {
     const x = gx + (rnd() - 0.5) * step * 0.8, z = gz + (rnd() - 0.5) * step * 0.8, d = floorDistance(x, z);
     if (d > 0.15 && d < 1.5) rocks.push({ x, z, sx: 0.9 + rnd() * 0.8, sy: 1.6 + rnd() * 1.6, sz: 0.9 + rnd() * 0.8, rot: rnd() * 6.28, tone: rnd() });
     else if (d >= 1.5 && d < 4.2 && rnd() < 0.6) rocks.push({ x, z, sx: 1.4 + rnd() * 1.2, sy: 2.6 + rnd() * 2.4, sz: 1.4 + rnd() * 1.2, rot: rnd() * 6.28, tone: rnd() });
   }
   // crystal clusters growing from the wall base (they overlap the unwalkable margin, so they never need to be solid)
-  for (let i = 0, ok = 0; i < 4000 && ok < 70; i++) {
-    const x = -46 + rnd() * 88, z = -37 + rnd() * 76, d = floorDistance(x, z);
+  for (let i = 0, ok = 0; i < 6000 && ok < 95; i++) {
+    const x = -46 + rnd() * 88, z = -55 + rnd() * 96, d = floorDistance(x, z);
     if (d > -0.15 || d < -0.9) continue;
     if (Math.hypot(x - HOLLOW_SPAWN.x, z - HOLLOW_SPAWN.z) < 2.2) continue;
     crystals.push({ x, z, scale: 0.55 + rnd() * 0.9, rot: rnd() * 6.28, hue: hueIndexAt(x, z) + (rnd() < 0.25 ? 1 : 0), glow: ok % 3 === 0 });

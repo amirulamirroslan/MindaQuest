@@ -16,6 +16,10 @@
  *                          /                 \
  *                  shell bell pier       wave bell pier
  *                              arrival beach
+ *
+ * v2.33 "Deeper Shore": three more places. Pearl Cove (south-west, a boardwalk along the arrival beach, always open), Tern Rock (south-east, a sandbar that
+ * only appears at HIGH tide, off the same beach) and Beacon Rock (north-east of the lighthouse island, so it opens with the causeway). Each has a message bottle,
+ * and the cove and the rocks have more Pebble Crabs and Gloom Gulls.
  */
 import { ColliderGrid, type Collider } from './colliders';
 import type { Vec2 } from './movement3d';
@@ -45,6 +49,10 @@ export const WRECK = { x: 38, z: 6, r: 12.5 };
 export const ISLAND = { x: 0, z: -44, r: 10 };
 export const CAVE = { x: -18, z: -58.5, r: 6 };
 export const LIGHTHOUSE_POS: Vec2 = { x: 0, z: -49 };
+/** v2.33: Pearl Cove (always open), Tern Rock (high tide only) and Beacon Rock (beyond the lighthouse island). */
+export const COVE = { x: -34, z: 41, r: 7 };
+export const TERN = { x: 35, z: 41, r: 6.5 };
+export const BEACON = { x: 25, z: -54, r: 7 };
 /** The lamp, at the foot of the lighthouse: touchable once the Heron is calm. */
 export const LAMP_POS: Vec2 = { x: 0, z: -41.2 };
 export const LAMP_RANGE = 3.0;
@@ -74,13 +82,13 @@ export const GLASS_SPOTS: readonly Vec2[] = [
 ];
 export const GLASS_RANGE = 1.4;
 /** Message bottles (the shore's Moon Tablets): flats, wrecks, sea cave. Each carries a tip for the Heron fight. */
-export const BOTTLE_SPOTS: readonly Vec2[] = [{ x: -40.8, z: 15.4 }, { x: 43.0, z: 9.4 }, { x: -15.4, z: -55.4 }];
+export const BOTTLE_SPOTS: readonly Vec2[] = [{ x: -40.8, z: 15.4 }, { x: 43.0, z: 9.4 }, { x: -15.4, z: -55.4 }, { x: -36.5, z: 37.5 }, { x: 37.5, z: 38 }, { x: 27.5, z: -50.5 }];
 export const BOTTLE_RANGE = 2.3;
 /** A spot beside each bottle that the hero can stand on to read it (used by the reachability test). */
-export const BOTTLE_APPROACH: readonly Vec2[] = [{ x: 1.1, z: -0.8 }, { x: -1.1, z: -0.6 }, { x: 1.2, z: -0.6 }];
+export const BOTTLE_APPROACH: readonly Vec2[] = [{ x: 1.1, z: -0.8 }, { x: -1.1, z: -0.6 }, { x: 1.2, z: -0.6 }, { x: 1.1, z: 0.8 }, { x: -1.1, z: 0.8 }, { x: -1.2, z: -0.6 }];
 /** Pebble Crabs: three on the flats, two by the wrecks. Gloom Gulls: one over the flats, two over the wrecks, one on the causeway. Each has a fixed id. */
-export const CRAB_SPOTS: readonly Vec2[] = [{ x: -30, z: 10 }, { x: -38, z: 3.5 }, { x: -42, z: 11 }, { x: 33, z: 3 }, { x: 41, z: 11 }];
-export const GULL_SPOTS: readonly Vec2[] = [{ x: -33, z: 15 }, { x: 36, z: -1 }, { x: 45, z: 5 }, { x: 0, z: -22 }];
+export const CRAB_SPOTS: readonly Vec2[] = [{ x: -30, z: 10 }, { x: -38, z: 3.5 }, { x: -42, z: 11 }, { x: 33, z: 3 }, { x: 41, z: 11 }, { x: -32, z: 43 }, { x: -38, z: 44 }];
+export const GULL_SPOTS: readonly Vec2[] = [{ x: -33, z: 15 }, { x: 36, z: -1 }, { x: 45, z: 5 }, { x: 0, z: -22 }, { x: 33, z: 43 }, { x: 23, z: -56 }];
 /** The Tidecaller Heron perches on the lighthouse island, in front of the lighthouse door. */
 export const HERON_POS: Vec2 = { x: 0, z: -45.5 };
 /** Where the hero starts again after being knocked out on the island (instead of walking back from the beach). */
@@ -108,6 +116,13 @@ export const GROUND: readonly GatedShape[] = [
   { part: 'island', gate: 'always', shape: disc(ISLAND.x, ISLAND.z, ISLAND.r) },
   { part: 'cave-path', gate: 'low', shape: path({ x: -6.5, z: -50 }, { x: -14.5, z: -56 }, 1.9) },
   { part: 'cave', gate: 'low', shape: disc(CAVE.x, CAVE.z, CAVE.r) },
+  // v2.33
+  { part: 'cove-path', gate: 'always', shape: path({ x: -4.5, z: 35 }, { x: -29, z: 41 }, 1.9) },
+  { part: 'cove', gate: 'always', shape: disc(COVE.x, COVE.z, COVE.r) },
+  { part: 'tern-bar', gate: 'high', shape: path({ x: 4.5, z: 35 }, { x: 31, z: 41 }, 1.8) },
+  { part: 'tern', gate: 'high', shape: disc(TERN.x, TERN.z, TERN.r) },
+  { part: 'beacon-path', gate: 'always', shape: path({ x: 6.5, z: -47 }, { x: 19, z: -52 }, 1.9) },
+  { part: 'beacon', gate: 'always', shape: disc(BEACON.x, BEACON.z, BEACON.r) },
 ];
 
 /** The ground that exists with these gates. */
@@ -156,6 +171,8 @@ export const SCENERY: readonly Collider[] = [
   { x: 32, z: 6.8, r: 2.0 }, { x: 40.6, z: 3.2, r: 2.2 }, { x: 36, z: 12.5, r: 1.3 }, { x: 45, z: -1.5, r: 1.2 }, { x: 31, z: -2, r: 1.0 },
   { x: -32.5, z: 5.5, r: 1.2 }, { x: -41, z: 8, r: 1.3 }, { x: -34, z: 14, r: 1.0 }, { x: -27, z: 7, r: 0.9 }, { x: -45, z: 10, r: 1.0 },
   { x: LIGHTHOUSE_POS.x, z: LIGHTHOUSE_POS.z, r: 3.1 }, { x: -9.4, z: -38.4, r: 1.8 }, { x: 6.4, z: -38.5, r: 1.0 }, { x: -16.8, z: -61.5, r: 1.0 }, { x: -22.5, z: -55.8, r: 1.2 },
+  // v2.33: rocks and driftwood in the cove, on Tern Rock and on Beacon Rock
+  { x: -39, z: 40, r: 1.2 }, { x: -29.5, z: 44.5, r: 1.0 }, { x: 39, z: 43, r: 1.1 }, { x: 31.5, z: 37, r: 0.9 }, { x: 28.5, z: -57, r: 1.1 }, { x: 21, z: -57.5, r: 0.9 },
 ];
 export const STATIC_COLLIDERS: readonly Collider[] = [
   ...HUTS, ...SCENERY,
@@ -187,9 +204,9 @@ export function buildShoreDecor(seed = 2029): ShoreDecor {
   const huts: HutSpec[] = HUTS.map((h, i) => ({ x: h.x, z: h.z, r: h.r, rot: (i * 1.3) % 6.28, roof: i % 3 }));
   const pebbles: ShoreDecor['pebbles'] = [], reeds: ShoreDecor['reeds'] = [];
   const all: ShoreGates = { tide: 'low', causeway: true };
-  for (let i = 0, ok = 0; i < 6000 && ok < 150; i++) {
-    const x = -52 + rnd() * 104, z = -66 + rnd() * 104;
-    if (!(onFloor(all, x, z, 0.2) && (Math.hypot(x - FLATS.x, z - FLATS.z) < FLATS.r - 0.5 || Math.hypot(x - WRECK.x, z - WRECK.z) < WRECK.r - 0.5 || Math.hypot(x - CAVE.x, z - CAVE.z) < CAVE.r - 0.5))) continue;
+  for (let i = 0, ok = 0; i < 9000 && ok < 190; i++) {
+    const x = -52 + rnd() * 104, z = -66 + rnd() * 120;
+    if (!(onFloor(all, x, z, 0.2) && (Math.hypot(x - FLATS.x, z - FLATS.z) < FLATS.r - 0.5 || Math.hypot(x - WRECK.x, z - WRECK.z) < WRECK.r - 0.5 || Math.hypot(x - CAVE.x, z - CAVE.z) < CAVE.r - 0.5 || Math.hypot(x - COVE.x, z - COVE.z) < COVE.r - 0.5 || Math.hypot(x - BEACON.x, z - BEACON.z) < BEACON.r - 0.5))) continue;
     if (STATIC_COLLIDERS.some(c => Math.hypot(x - c.x, z - c.z) < c.r + 0.3)) continue;
     pebbles.push({ x, z, s: 0.12 + rnd() * 0.22, tone: rnd(), rot: rnd() * 6.28 }); ok++;
   }
@@ -210,6 +227,10 @@ const LOW: ShoreGates = { tide: 'low', causeway: false };
 const HIGH: ShoreGates = { tide: 'high', causeway: false };
 const SOLVED_LOW: ShoreGates = { tide: 'low', causeway: true };
 const SOLVED_STILL: ShoreGates = { tide: 'still', causeway: true };
+/** The least each pickup/creature needs (index = id): the first ones are the v2.29 places; v2.33 adds the cove (always), Tern Rock (high tide) and Beacon Rock (causeway). */
+export const BOTTLE_NEEDS: readonly ShoreGates[] = [LOW, HIGH, SOLVED_LOW, ANY, HIGH, SOLVED_STILL];
+export const CRAB_NEEDS: readonly ShoreGates[] = [LOW, LOW, LOW, HIGH, HIGH, ANY, ANY];
+export const GULL_NEEDS: readonly ShoreGates[] = [LOW, HIGH, HIGH, SOLVED_STILL, HIGH, SOLVED_STILL];
 export function shoreMustReach(): MustReach[] {
   return [
     { name: 'board', p: { x: TIDE_BOARD_POS.x - 1.5, z: TIDE_BOARD_POS.z + 2.0 }, needs: ANY },
@@ -220,9 +241,9 @@ export function shoreMustReach(): MustReach[] {
     ...[2, 3, 4].map(i => ({ name: `glass ${i}`, p: GLASS_SPOTS[i], needs: LOW })),
     ...[5, 6].map(i => ({ name: `glass ${i}`, p: GLASS_SPOTS[i], needs: HIGH })),
     { name: 'glass 7', p: GLASS_SPOTS[7], needs: SOLVED_LOW },
-    ...BOTTLE_SPOTS.map((p, i) => ({ name: `bottle ${i}`, p: { x: p.x + BOTTLE_APPROACH[i].x, z: p.z + BOTTLE_APPROACH[i].z }, needs: i === 0 ? LOW : i === 1 ? HIGH : SOLVED_LOW })),
-    ...CRAB_SPOTS.map((p, i) => ({ name: `crab ${i}`, p, needs: i < 3 ? LOW : HIGH })),
-    ...GULL_SPOTS.map((p, i) => ({ name: `gull ${i}`, p, needs: i === 0 ? LOW : i < 3 ? HIGH : SOLVED_STILL })),
+    ...BOTTLE_SPOTS.map((p, i) => ({ name: `bottle ${i}`, p: { x: p.x + BOTTLE_APPROACH[i].x, z: p.z + BOTTLE_APPROACH[i].z }, needs: BOTTLE_NEEDS[i] })),
+    ...CRAB_SPOTS.map((p, i) => ({ name: `crab ${i}`, p, needs: CRAB_NEEDS[i] })),
+    ...GULL_SPOTS.map((p, i) => ({ name: `gull ${i}`, p, needs: GULL_NEEDS[i] })),
     { name: 'keeper', p: { x: KEEPER_POS.x + 1.6, z: KEEPER_POS.z + 0.8 }, needs: SOLVED_STILL },
     { name: 'lamp', p: { x: LAMP_POS.x, z: LAMP_POS.z + 1.0 }, needs: SOLVED_STILL },
     { name: 'heron', p: HERON_POS, needs: SOLVED_STILL },

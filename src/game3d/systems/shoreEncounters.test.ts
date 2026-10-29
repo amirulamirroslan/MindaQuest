@@ -35,7 +35,7 @@ describe('moonwake shore encounters', () => {
 
 describe('moonwake shore map', () => {
   it('maps points to the square and back, with the whole coast inside it', () => {
-    for (const [x, z] of [[0, 33], [-50, 8], [51, 6], [0, -64], [-24, -64]]) { const m = toShoreMap(x, z, 400); expect(m.px).toBeGreaterThan(0); expect(m.px).toBeLessThan(400); expect(m.py).toBeGreaterThan(0); expect(m.py).toBeLessThan(400); const b = fromShoreMap(m.px, m.py, 400); expect(b.x).toBeCloseTo(x, 6); expect(b.z).toBeCloseTo(z, 6); }
+    for (const [x, z] of [[0, 33], [-50, 8], [51, 6], [0, -64], [-24, -64], [-41, 48], [41.5, 47.5], [32, -61]]) { const m = toShoreMap(x, z, 400); expect(m.px).toBeGreaterThan(0); expect(m.px).toBeLessThan(400); expect(m.py).toBeGreaterThan(0); expect(m.py).toBeLessThan(400); const b = fromShoreMap(m.px, m.py, 400); expect(b.x).toBeCloseTo(x, 6); expect(b.z).toBeCloseTo(z, 6); }
     expect(SHORE_MAP.half).toBeGreaterThan(50);
   });
   it('points the star at Mak Long, the board, the bells, the island, the lamp, then nothing', () => {

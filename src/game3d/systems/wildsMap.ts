@@ -17,7 +17,7 @@ export function visibleWildsMarks(s: WildsState): WildsMark[] {
 /** Chests on ground the hero has seen (a hidden zone's chest only once that zone is found). */
 export function visibleChests(s: WildsState): { id: number; x: number; z: number; open: boolean }[] {
   return CHEST_SPOTS.flatMap((c, id) => {
-    const hidden = c.zone === 'cave' || c.zone === 'heartwood' || c.zone === 'grove';
+    const hidden = c.zone === 'cave' || c.zone === 'heartwood' || c.zone === 'grove' || c.zone === 'falls';
     return (hidden ? s.zones.includes(c.zone) : exploredAt(s, c.x, c.z)) ? [{ id, x: c.x, z: c.z, open: s.chests.includes(id) }] : [];
   });
 }

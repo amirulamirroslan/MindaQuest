@@ -38,7 +38,7 @@ import { itemById, type CosmeticSlot } from './cosmetics/catalog';
 import { resolveLoadout } from './cosmetics/loadout';
 import { resolveCircles, rayClearDistance } from './systems/colliders';
 import {
-  BONUS_XP_CAP, PETALS_NEEDED, SPROUTS_NEEDED, levelForXp, loadProgress, newProgress, reduceQuest, saveProgress, xpIntoLevel, type Progress, type QuestEvent, type WoodsStage,
+  BONUS_XP_CAP, HOLLOW_PERFECT_REWARD, PETALS_NEEDED, SPROUTS_NEEDED, levelForXp, loadProgress, newProgress, reduceQuest, saveProgress, xpIntoLevel, type Progress, type QuestEvent, type WoodsStage,
 } from './systems/woodsQuest';
 import { PLAY_RADIUS, heightAt } from './systems/worldShape';
 import { WildsWorld } from './render/WildsWorld';
@@ -56,7 +56,7 @@ import {
   clampToArena, clampToFloor, floorRayClear, type EchoColor,
 } from './systems/hollowLayout';
 import {
-  GLOWCAP_COUNT, SHARDLING_COUNT, SHARD_COUNT, TABLET_COUNT, calmShardling, collectShard, defeatWarden, glimAsked, glimClaim, glimScript, lightGlowcap, loadHollow, markVisited, newHollow, readTablet, saveHollow, secretOpen,
+  GLOWCAP_COUNT, SHARDLING_COUNT, SHARD_COUNT, TABLET_COUNT, calmShardling, collectShard, defeatWarden, glimAsked, glimClaim, glimScript, hollowPerfect, lightGlowcap, loadHollow, markVisited, newHollow, readTablet, saveHollow, secretOpen,
   strikeEcho, touchHeart, wardenAwake, type HollowState,
 } from './systems/hollowQuest';
 import { HOLLOW_TEXT, hollowFill, hollowObjective, orderText } from './data/hollowText';
@@ -625,6 +625,12 @@ export class Game3D {
     }
     this.sfx.play('stomp', 2); this.sfx.play('hit', 2);
   }
+  /** v2.31.3: pays the Heartstone Cloak once, the moment the Crystal Hollow is 100% (the quest reducer never pays a cosmetic twice). */
+  private checkHollowPerfect(): void {
+    if (!hollowPerfect(this.hollow) || this.progress.unlocked.includes(HOLLOW_PERFECT_REWARD)) return;
+    setTimeout(() => { this.hud.toast(this.ht.toast.perfect, 4600, 'sparkles'); this.sfx.play('fanfare'); }, 1500);
+    this.applyQuest({ kind: 'hollow', xp: 0, unlock: HOLLOW_PERFECT_REWARD });
+  }
   /** A Hollow Shardling has been calmed: its nest number is saved, so it never comes back for XP (see systems/hollowQuest.ts). */
   private shardlingCalmed(id: number | null, at: { x: number; y: number; z: number }): void {
     const r = calmShardling(this.hollow, id ?? -1); if (!r.first) return;
@@ -632,6 +638,7 @@ export class Game3D {
     this.hud.toast(hollowFill(this.ht.toast.shardling, { n: this.hollow.shardlings.length, total: SHARDLING_COUNT }), 2600, 'sparkles');
     this.applyQuest({ kind: 'hollow', xp: r.xp }, at);
     if (r.all) setTimeout(() => { this.hud.toast(this.ht.toast.allShardlings, 4600, 'sparkles'); this.sfx.play('levelup'); }, 1200);
+    this.checkHollowPerfect();
     this.refreshHud();
   }
   /** The Hollow Warden has fallen: pays XP and the Warden's Mantle once, and frees the Heartstone. */
@@ -1209,6 +1216,7 @@ export class Game3D {
       this.echoStep = 0; this.muralSeen = false; this.glimGreeted = false; this.talkAt = null; this.talkWho = null; this.wardenAnnounced = false; this.glimFacing = Math.PI * 0.85;
       this.applyWorldState(true);   // the creatures still owed to the Hollow (see spawnHollowCreatures)
       if (first) { this.hollow = markVisited(this.hollow); saveHollow(this.hollow); }
+      this.checkHollowPerfect();   // an older save that was already 100% gets the cloak on its next visit
       if (!quiet) this.hud.toast(first ? this.ht.toast.enter : this.ht.name, 4200, 'sparkles');
     } else if (a === 'shore') {
       const sw = this.ensureShore(), first = !this.shore.visited;
@@ -1288,6 +1296,7 @@ export class Game3D {
     this.fx.burst(x, 2.4, z, 0xffb4e0, 70, 4.2, 1.4, 0.5, 3); this.fx.flash(x, 2.4, z, 0xffd0ec, 9, 0.9); this.fx.beam(x, 0, z, 0xffc8ea, 10, 1.6, 1.4); this.fx.ring(x, 0.1, z, 7, 0xffd0ec, 48);
     this.hud.toast(this.ht.toast.heartDone, 5200, 'sparkles');
     this.applyQuest({ kind: 'hollow', xp: r.xp, unlock: r.unlock }, { x, y: 3.6, z });
+    this.checkHollowPerfect();
     this.refreshHud();
     if (!this.endSeen) { this.endSeen = true; setTimeout(() => { if (!this.hud.endOpen) { this.input.releaseAll(); this.hud.showEnd(); } }, 3200); }
   }
@@ -1314,7 +1323,7 @@ export class Game3D {
       else if (script === 'report') {
         const r = glimClaim(this.hollow); if (r.xp === 0) return;   // paid once: a second report (or a lost save) cannot pay again
         this.hollow = r.state; saveHollow(this.hollow); this.glim.cheer(); this.hero.cheer(1.6); this.sfx.play('fanfare');
-        this.hud.toast(this.ht.toast.glimDone, 4200, 'sparkles'); this.applyQuest({ kind: 'hollow', xp: r.xp }, { x: GLIM_POS.x, y: 2.2, z: GLIM_POS.z }); this.refreshHud();
+        this.hud.toast(this.ht.toast.glimDone, 4200, 'sparkles'); this.applyQuest({ kind: 'hollow', xp: r.xp }, { x: GLIM_POS.x, y: 2.2, z: GLIM_POS.z }); this.checkHollowPerfect(); this.refreshHud();
       }
     }, script === 'report' ? this.gateQuestion(g.ask) : undefined);
     this.sfx.play('talk');
@@ -1331,6 +1340,7 @@ export class Game3D {
       this.hud.toast(hollowFill(this.ht.toast.tablet, { n: this.hollow.tablets.length, total: TABLET_COUNT }), 2600, 'star');
       this.applyQuest({ kind: 'hollow', xp: r.xp }, { x: t.x, y: 1.9, z: t.z });
       if (r.all) setTimeout(() => { this.hud.toast(this.ht.toast.allTablets, 4600, 'sparkles'); this.sfx.play('levelup'); }, 1200);
+      this.checkHollowPerfect();
       this.refreshHud();
     }
     this.hud.openDialogue(this.ht.tablet.name, this.ht.tablet.lines[id], () => { this.talkAt = null; this.talkWho = null; });
@@ -1568,6 +1578,7 @@ export class Game3D {
       this.hud.toast(hollowFill(this.ht.toast.shard, { n: this.hollow.shards.length, total: SHARD_COUNT }), 2400, 'star');
       this.applyQuest({ kind: 'hollow', xp: r.xp }, { x: s.x, y: 1.8, z: s.z });
       if (r.all) setTimeout(() => { this.hud.toast(this.ht.toast.allShards, 4600, 'sparkles'); this.sfx.play('levelup'); }, 1100);
+      this.checkHollowPerfect();
       this.refreshHud();
     }
   }

@@ -56,6 +56,12 @@ export interface HollowResult { state: HollowState; xp: number; unlock?: string 
 const same = (s: HollowState): HollowResult => ({ state: s, xp: 0 });
 
 export const secretOpen = (s: HollowState): boolean => s.glowcaps.length >= GLOWCAP_COUNT;
+/** v2.31.3: the Crystal Hollow is 100%: Heartstone woken, every Moon Shard, Shardling and Moon Tablet found, and Glim thanked. */
+export const hollowPerfect = (s: HollowState): boolean => s.heartDone && s.shards.length >= SHARD_COUNT && s.shardlings.length >= SHARDLING_COUNT && s.tablets.length >= TABLET_COUNT && s.glim === 2;
+/** v2.31.3: the id of the Moon Shard inside the secret nook (an explicit index: v2.32 appended three more shards after it). */
+export const SECRET_SHARD = 4;
+/** v2.31.3: true when every Moon Shard but the one in the secret nook has been found, so the quest card and the map can point at the glowcaps / the nook. */
+export const onlySecretShardLeft = (s: HollowState): boolean => !s.shards.includes(SECRET_SHARD) && SHARD_SPOTS.every((_, i) => i === SECRET_SHARD || s.shards.includes(i));
 export const shardsDone = (s: HollowState): boolean => s.shards.length >= SHARD_COUNT;
 export const shardlingsDone = (s: HollowState): boolean => s.shardlings.length >= SHARDLING_COUNT;
 export const tabletsDone = (s: HollowState): boolean => s.tablets.length >= TABLET_COUNT;

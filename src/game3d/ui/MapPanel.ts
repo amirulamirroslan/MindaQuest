@@ -146,6 +146,9 @@ export class MapPanel {
       case 'island': c.fillStyle = '#f6f0e0'; c.beginPath(); c.moveTo(-4 * u, 9 * u); c.lineTo(-2.4 * u, -7 * u); c.lineTo(2.4 * u, -7 * u); c.lineTo(4 * u, 9 * u); c.closePath(); c.fill(); c.stroke(); c.fillStyle = '#d8483a'; c.fillRect(-3.2 * u, -1 * u, 6.4 * u, 4 * u); c.fillStyle = '#ffe066'; c.beginPath(); c.arc(0, -10 * u, 3.4 * u, 0, Math.PI * 2); c.fill(); c.stroke(); break;
       case 'flats': c.fillStyle = '#3aa8b0'; c.beginPath(); c.ellipse(0, 0, 10 * u, 6 * u, 0, 0, Math.PI * 2); c.fill(); c.stroke(); break;
       case 'wreck': c.strokeStyle = '#3b2414'; c.lineWidth = 3 * u; c.beginPath(); c.moveTo(-9 * u, 4 * u); c.quadraticCurveTo(0, 12 * u, 9 * u, 4 * u); c.moveTo(0, 6 * u); c.lineTo(0, -9 * u); c.moveTo(0, -8 * u); c.lineTo(7 * u, -2 * u); c.lineTo(0, -2 * u); c.stroke(); break;
+      case 'cove': c.fillStyle = '#f4d6e0'; c.beginPath(); c.arc(0, 0, 6 * u, 0, Math.PI * 2); c.fill(); c.stroke(); c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-2 * u, -2 * u, 2 * u, 0, Math.PI * 2); c.fill(); break;
+      case 'tern': c.fillStyle = '#9aa8b8'; c.beginPath(); c.moveTo(-8 * u, 6 * u); c.lineTo(-3 * u, -6 * u); c.lineTo(3 * u, -2 * u); c.lineTo(8 * u, 6 * u); c.closePath(); c.fill(); c.stroke(); break;
+      case 'beacon': c.fillStyle = '#ffd36b'; c.beginPath(); c.moveTo(0, -9 * u); c.lineTo(6 * u, 5 * u); c.lineTo(-6 * u, 5 * u); c.closePath(); c.fill(); c.stroke(); break;
       case 'cave': c.fillStyle = '#3a4258'; c.beginPath(); c.arc(0, 4 * u, 8 * u, Math.PI, 0); c.closePath(); c.fill(); c.stroke(); break;
       case 'beach': c.strokeStyle = '#3b2414'; c.lineWidth = 4 * u; c.beginPath(); c.arc(0, 2 * u, 7 * u, Math.PI, 0); c.moveTo(-7 * u, 2 * u); c.lineTo(-7 * u, 8 * u); c.moveTo(7 * u, 2 * u); c.lineTo(7 * u, 8 * u); c.stroke(); c.strokeStyle = '#bfe4ff'; c.lineWidth = 2 * u; c.stroke(); break;
     }
@@ -192,6 +195,9 @@ export class MapPanel {
       case 'pool': c.fillStyle = '#5aa9ee'; c.beginPath(); c.ellipse(0, 0, 11 * u, 7 * u, 0, 0, Math.PI * 2); c.fill(); c.stroke(); break;
       case 'grotto': c.fillStyle = '#3fd6a0'; c.beginPath(); c.arc(0, 0, 8 * u, Math.PI, 0); c.closePath(); c.fill(); c.stroke(); break;
       case 'pink': gem(5 * u, '#ff8fd0'); break;
+      case 'lake': c.fillStyle = '#7fd0ff'; c.beginPath(); c.ellipse(0, 0, 12 * u, 7 * u, 0, 0, Math.PI * 2); c.fill(); c.stroke(); gem(3 * u, '#ffffff', 0, -1 * u); break;
+      case 'gallery': gem(5 * u, '#9be8c8', -6 * u, 0); gem(5 * u, '#9be8c8', 6 * u, 0); break;
+      case 'vault': gem(7 * u, '#ffd36b'); break;
       case 'mural': c.fillStyle = '#e6c36a'; c.fillRect(-8 * u, -5 * u, 16 * u, 10 * u); c.strokeRect(-8 * u, -5 * u, 16 * u, 10 * u); break;
       case 'glim': c.fillStyle = '#d4f4ff'; c.beginPath(); c.arc(0, 0, 6 * u, 0, Math.PI * 2); c.fill(); c.stroke(); c.fillStyle = '#ffe066'; c.beginPath(); c.moveTo(0, -13 * u); c.lineTo(3 * u, -6 * u); c.lineTo(-3 * u, -6 * u); c.closePath(); c.fill(); c.stroke(); break;   // Glim: a pale spirit under his little horn-light
     }
@@ -273,6 +279,9 @@ export class MapPanel {
       case 'steps': for (const dx of [-6, 0, 6]) { c.fillStyle = '#d8dde2'; c.fillRect((dx - 2) * u, -7 * u, 4 * u, 13 * u); c.strokeRect((dx - 2) * u, -7 * u, 4 * u, 13 * u); } break;
       case 'moon': for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2; disc(2 * u, '#c6ccd2', Math.cos(a) * 7 * u, Math.sin(a) * 7 * u); } break;
       case 'mist': c.strokeStyle = '#3b2414'; c.lineWidth = 4 * u; c.beginPath(); c.arc(0, 2 * u, 7 * u, Math.PI, 0); c.moveTo(-7 * u, 2 * u); c.lineTo(-7 * u, 8 * u); c.moveTo(7 * u, 2 * u); c.lineTo(7 * u, 8 * u); c.stroke(); c.strokeStyle = '#bfe4ff'; c.lineWidth = 2 * u; c.stroke(); break;
+      case 'marsh': disc(6 * u, '#7fc8a8', 0, 1 * u); disc(1.6 * u, '#ffe66b', -3 * u, -2 * u); disc(1.6 * u, '#ffe66b', 3 * u, 0); break;
+      case 'rise': tri(8 * u, 8 * u, '#e6c36a'); disc(2 * u, '#fff4c0', 0, -1 * u); break;
+      case 'falls': c.fillStyle = '#8fd0ff'; c.fillRect(-3 * u, -8 * u, 6 * u, 14 * u); c.strokeRect(-3 * u, -8 * u, 6 * u, 14 * u); disc(5 * u, '#6aa8e0', 0, 7 * u); break;
       case 'door': c.fillStyle = '#6a6e78'; c.fillRect(-5 * u, -6 * u, 10 * u, 12 * u); c.strokeRect(-5 * u, -6 * u, 10 * u, 12 * u); break;
     }
     c.restore();

@@ -33,8 +33,8 @@ export interface WildsStrings {
 export const WILDS_TEXT: Record<Lang, WildsStrings> = {
   en: {
     name: 'The Wider Woods',
-    zones: { orchard: 'Orchard Lane', hearthfield: 'Hearthfield Farm', kite: 'Kite Meadow', lookout: 'Lookout Hill', mirror: 'Mirror Pond', thicket: 'Mossbark Thicket', heartwood: 'The Heartwood', grove: 'Hidden Grove', cave: 'Whisper Cave', steps: 'The Old Steps', moon: 'Moon Circle', mist: 'Mistfall Gate' },
-    labels: { orchard: 'Orchard', hearthfield: 'Farm', kite: 'Kite Meadow', lookout: 'Lookout', mirror: 'Mirror Pond', thicket: 'Mossbark', heartwood: 'Heartwood', grove: 'Hidden Grove', cave: 'Whisper Cave', steps: 'Old Steps', moon: 'Moon Circle', mist: 'Mistfall Gate', mill: 'Windmill', door: 'Sealed Door' },
+    zones: { orchard: 'Orchard Lane', hearthfield: 'Hearthfield Farm', kite: 'Kite Meadow', lookout: 'Lookout Hill', mirror: 'Mirror Pond', thicket: 'Mossbark Thicket', heartwood: 'The Heartwood', grove: 'Hidden Grove', cave: 'Whisper Cave', steps: 'The Old Steps', moon: 'Moon Circle', mist: 'Mistfall Gate', marsh: 'Firefly Marsh', rise: 'Sunstone Rise', falls: 'Whispering Falls' },
+    labels: { orchard: 'Orchard', hearthfield: 'Farm', kite: 'Kite Meadow', lookout: 'Lookout', mirror: 'Mirror Pond', thicket: 'Mossbark', heartwood: 'Heartwood', grove: 'Hidden Grove', cave: 'Whisper Cave', steps: 'Old Steps', moon: 'Moon Circle', mist: 'Mistfall Gate', mill: 'Windmill', door: 'Sealed Door', marsh: 'Firefly Marsh', rise: 'Sunstone Rise', falls: 'Whispering Falls' },
     ui: { open: 'Open', light: 'Light', read: 'Read', talk: 'Talk', look: 'Look' },
     toast: {
       discover: 'Found: {name}', hiddenFound: 'A secret place: {name}!', acorn: 'Fairy Acorn {n}/{total}', allAcorns: 'All the Fairy Acorns!', pumpkin: 'Golden Pumpkin {n}/{total}', pearl: 'Pond Pearl {n}/{total}',
@@ -78,6 +78,7 @@ export const WILDS_TEXT: Record<Lang, WildsStrings> = {
       lines: {
         orchard: ['Orchard Lane and Hearthfield Farm. Windmill ahead.'], pond: ['Pond Road. Mirror Pond lies to the east.'], thicket: ['Mossbark Trail. The thicket is dark, so follow the lanterns.'],
         steps: ['The Old Steps. Ancient ruins lie to the north.'], mist: ['Mist Road. The Mistfall Gate is at the end.'], fern: ['A fern trail leads north-west. Few travellers go this way.'], lookout: ['Lookout Trail. Climb the hill for the view.'],
+        marsh: ['Marsh Trail. Fireflies gather where the farm ends.'], rise: ['Rise Trail. Follow it past the pond to the sunlit stones.'],
       },
     },
     gate: { name: 'Mistfall Gate', lines: ['A great stone gate. A thick, cold mist rolls in and hides the path beyond.', 'Something high and far away is waiting on the other side.', 'The mist is too thick to cross yet. Come back one day.'] },
@@ -89,8 +90,8 @@ export const WILDS_TEXT: Record<Lang, WildsStrings> = {
   },
   ms: {
     name: 'Hutan Yang Lebih Luas',
-    zones: { orchard: 'Lorong Kebun', hearthfield: 'Ladang Hearthfield', kite: 'Padang Layang-layang', lookout: 'Bukit Tinjau', mirror: 'Tasik Cermin', thicket: 'Belukar Mossbark', heartwood: 'Pokok Teras', grove: 'Dusun Tersembunyi', cave: 'Gua Bisikan', steps: 'Tangga Lama', moon: 'Bulatan Bulan', mist: 'Pintu Mistfall' },
-    labels: { orchard: 'Kebun', hearthfield: 'Ladang', kite: 'Padang Layang', lookout: 'Bukit Tinjau', mirror: 'Tasik Cermin', thicket: 'Mossbark', heartwood: 'Pokok Teras', grove: 'Dusun Rahsia', cave: 'Gua Bisikan', steps: 'Tangga Lama', moon: 'Bulatan Bulan', mist: 'Pintu Mistfall', mill: 'Kincir Angin', door: 'Pintu Berkunci' },
+    zones: { orchard: 'Lorong Kebun', hearthfield: 'Ladang Hearthfield', kite: 'Padang Layang-layang', lookout: 'Bukit Tinjau', mirror: 'Tasik Cermin', thicket: 'Belukar Mossbark', heartwood: 'Pokok Teras', grove: 'Dusun Tersembunyi', cave: 'Gua Bisikan', steps: 'Tangga Lama', moon: 'Bulatan Bulan', mist: 'Pintu Mistfall', marsh: 'Paya Kelip-kelip', rise: 'Tanjakan Batu Suria', falls: 'Air Terjun Berbisik' },
+    labels: { orchard: 'Kebun', hearthfield: 'Ladang', kite: 'Padang Layang', lookout: 'Bukit Tinjau', mirror: 'Tasik Cermin', thicket: 'Mossbark', heartwood: 'Pokok Teras', grove: 'Dusun Rahsia', cave: 'Gua Bisikan', steps: 'Tangga Lama', moon: 'Bulatan Bulan', mist: 'Pintu Mistfall', mill: 'Kincir Angin', door: 'Pintu Berkunci', marsh: 'Paya Kelip', rise: 'Batu Suria', falls: 'Air Terjun' },
     ui: { open: 'Buka', light: 'Nyalakan', read: 'Baca', talk: 'Bercakap', look: 'Lihat' },
     toast: {
       discover: 'Jumpa: {name}', hiddenFound: 'Tempat rahsia: {name}!', acorn: 'Buah Ek Pari-pari {n}/{total}', allAcorns: 'Semua Buah Ek Pari-pari!', pumpkin: 'Labu Emas {n}/{total}', pearl: 'Mutiara Tasik {n}/{total}',
@@ -134,6 +135,7 @@ export const WILDS_TEXT: Record<Lang, WildsStrings> = {
       lines: {
         orchard: ['Lorong Kebun dan Ladang Hearthfield. Kincir angin di hadapan.'], pond: ['Jalan Tasik. Tasik Cermin di sebelah timur.'], thicket: ['Denai Mossbark. Belukar gelap, jadi ikut tanglung.'],
         steps: ['Tangga Lama. Runtuhan purba di sebelah utara.'], mist: ['Jalan Kabus. Pintu Mistfall di hujungnya.'], fern: ['Denai paku-pakis ke barat laut. Jarang orang lalu sini.'], lookout: ['Denai Bukit Tinjau. Daki bukit untuk melihat pemandangan.'],
+        marsh: ['Denai Paya. Kelip-kelip berkumpul di hujung ladang.'], rise: ['Denai Tanjakan. Ikutlah melepasi tasik ke batu-batu yang bercahaya.'],
       },
     },
     gate: { name: 'Pintu Mistfall', lines: ['Sebuah pintu batu yang besar. Kabus tebal dan sejuk bergulung masuk dan menyembunyikan laluan di sebelah sana.', 'Sesuatu yang tinggi dan jauh sedang menunggu di seberang.', 'Kabus terlalu tebal untuk dilalui lagi. Datang lagi suatu hari nanti.'] },

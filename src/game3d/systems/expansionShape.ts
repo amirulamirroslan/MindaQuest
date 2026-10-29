@@ -28,6 +28,10 @@ export const PATHS: readonly PathDef[] = [
   { id: 'heartwood-shortcut', half: 1.2, clear: 3.0, pts: [P(-31, -8), P(-40, -8), P(-48, -8), P(-56, -4), P(-62, 2)] },
   { id: 'lookout-trail', half: 1.4, clear: 3.0, pts: [P(2, 60), P(16, 58), P(30, 56), P(44, 56), P(54, 56), P(57.4, 56)] },
   { id: 'meadow-path', half: 1.4, clear: 3.0, pts: [P(-2, 60), P(-16, 62), P(-30, 62), P(-42, 62)] },
+  // v2.34
+  { id: 'marsh-trail', half: 1.4, clear: 3.0, pts: [P(15, 76), P(24, 79), P(33, 78), P(40, 78)] },
+  { id: 'rise-trail', half: 1.4, clear: 3.0, pts: [P(78, 8), P(83, -2), P(84, -14), P(80, -23)] },
+  { id: 'falls-trail', half: 1.2, clear: 2.6, pts: [P(-14, -83), P(-23, -84), P(-30, -82)] },
 ];
 
 interface Seg { ax: number; az: number; bx: number; bz: number; l2: number; x0: number; x1: number; z0: number; z1: number }
@@ -80,6 +84,9 @@ export const CLEARINGS: readonly Clearing[] = [
   { id: 'old-steps', x: 0, z: -78, r: 15, blend: 5 },
   { id: 'moon-circle', x: 30, z: -54, r: 7, blend: 3 },
   { id: 'mist-gate', x: 62, z: -66, r: 6, blend: 3 },
+  { id: 'firefly-marsh', x: 42, z: 78, r: 7, blend: 4 },
+  { id: 'sunstone-rise', x: 80, z: -28, r: 7, blend: 4 },
+  { id: 'whispering-falls', x: -34, z: -82, r: 7, blend: 4 },
 ];
 
 export interface Hill { x: number; z: number; r: number; h: number }

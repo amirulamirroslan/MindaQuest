@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { HOLLOW_TEXT, hollowFill, hollowObjective, orderText } from './hollowText';
 import { TEXT } from './woodsText';
 import { ECHO_ORDER } from '../systems/hollowLayout';
-import { calmShardling, collectShard, glimAsked, newHollow, readTablet, SHARDLING_COUNT, SHARD_COUNT, TABLET_COUNT } from '../systems/hollowQuest';
+import { calmShardling, collectShard, glimAsked, newHollow, readTablet, SECRET_SHARD, SHARDLING_COUNT, SHARD_COUNT, TABLET_COUNT } from '../systems/hollowQuest';
 
 describe('crystal hollow text', () => {
   it('has the same shape in both languages and no empty strings', () => {
@@ -58,3 +58,17 @@ describe('crystal hollow text', () => {
   });
   it('fills numbers and leaves unknown holes visible', () => { expect(hollowFill('{n} of {total}', { n: 2, total: 5 })).toBe('2 of 5'); expect(hollowFill('{x}', {})).toBe('{x}'); });
 });
+
+describe('v2.31.3 last shard objective', () => {
+  const done = { ...newHollow(), doorOpen: true, wardenDefeated: true, heartDone: true, glim: 2 as const };
+  const allButSecret = Array.from({ length: SHARD_COUNT }, (_, i) => i).filter(i => i !== SECRET_SHARD);
+  it('tells the player to light the glowcaps, then to fetch the nook shard', () => {
+    for (const l of ['en', 'ms'] as const) {
+      const t = HOLLOW_TEXT[l].objective, o = { inside: true, step: 0, muralSeen: true };
+      expect(hollowObjective(l, { ...done, shards: allButSecret, glowcaps: [0] }, o)).toBe(hollowFill(t.glowcaps, { n: 1, total: 3 }));
+      expect(hollowObjective(l, { ...done, shards: allButSecret, glowcaps: [0, 1, 2] }, o)).toBe(t.nook);
+      expect(hollowObjective(l, { ...done, shards: [0] }, o)).toBe(hollowFill(t.shards, { n: 1, total: SHARD_COUNT }));
+    }
+  });
+});
+

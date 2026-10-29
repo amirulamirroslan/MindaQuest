@@ -27,13 +27,13 @@ export interface ShoreStrings {
   /** Hints for the two sums (the generic riddle hints talk about petals, so the shore says its own): a hint line and a "how to think about it" line for each. */
   sums: Record<'money' | 'clock', { hint: { add: string; subtract: string }; concept: { add: string; subtract: string } }>;
   /** The three message bottles: a name and lines each (they teach the Heron's moves). */
-  bottle: { name: string; lines: [string[], string[], string[]] };
+  bottle: { name: string; lines: string[][] };
   /** The Tide Board: the title and one line per song (`{order}` is the bells in order). */
   board: { title: string; ebb: string; flood: string; hint: string };
   /** v2.30: the always-visible tide line in the quest card (text and an arrow, so the tide never depends on colour). */
   tide: Record<'low' | 'high' | 'still', string>;
   /** Names on the shore map. */
-  labels: Record<'beach' | 'village' | 'flats' | 'wreck' | 'island' | 'cave', string>;
+  labels: Record<'beach' | 'village' | 'flats' | 'wreck' | 'island' | 'cave' | 'cove' | 'tern' | 'beacon', string>;
   mapTitle: string;
   /** Elder Tok Wan's lines once the Heartstone is touched: sending the hero to the coast, then after the lamp is lit. */
   elderToShore: string[];
@@ -134,11 +134,14 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
         ['A note in a bottle: \u2018The Heron splashes the water where you stand. Keep moving and the splash will miss you.\u2019'],
         ['A note in a bottle: \u2018Its wing-sweep is a long line, but slow to aim. Step to the side, or roll through it.\u2019'],
         ['A note in a bottle: \u2018When the Heron preens, its chest shows. Strike then, and every blow counts double. Its ring only reaches so far: run beyond the edge.\u2019'],
+        ['A note in a bottle: \u2018The pearls in this cove are only the sea’s old tears. Gather them gently and the tide will remember you.\u2019'],
+        ['A note in a bottle: \u2018Tern Rock is a rock only when the sea is high. Come at high water and the terns will share their view.\u2019'],
+        ['A note in a bottle: \u2018From Beacon Rock the lighthouse looks small. Every light the keeper ever lit began as a spark like yours.\u2019'],
       ],
     },
     tide: { low: 'Low tide', high: 'High tide', still: 'Tide: still' },
     board: { title: 'Tide Board', ebb: 'Ebb song, low tide: {order}', flood: 'Flood song, high tide: {order} (the ebb song backwards)', hint: 'Ring the bells in order. A wrong bell only starts again.' },
-    labels: { beach: 'Way out', village: 'Stilt village', flats: 'Tidepool Flats', wreck: 'Shipwrecks', island: 'Lighthouse', cave: 'Sea cave' },
+    labels: { beach: 'Way out', village: 'Stilt village', flats: 'Tidepool Flats', wreck: 'Shipwrecks', island: 'Lighthouse', cave: 'Sea cave', cove: 'Pearl Cove', tern: 'Tern Rock', beacon: 'Beacon Rock' },
     mapTitle: 'Moonwake Shore map',
     elderToShore: ['The Heartstone\u2019s light flowed down the river to the sea, hero. Far along the coast, the tide has stopped and the lighthouse is dark.', 'Take the river path by the east side of the village. Moonwake Shore needs you!'],
     elderShoreDone: ['Moonwake Shore is shining again. You did that, hero!', 'The river path is always open for you. Sea-glass and message bottles still hide along the coast.'],
@@ -236,11 +239,14 @@ export const SHORE_TEXT: Record<Lang, ShoreStrings> = {
         ['Nota dalam botol: \u2018Bangau memercikkan air di tempat kamu berdiri. Terus bergerak dan percikan itu tidak akan kena.\u2019'],
         ['Nota dalam botol: \u2018Kibasan sayapnya berbentuk garisan panjang, tetapi lambat disasarkan. Melangkahlah ke tepi, atau bergulinglah melaluinya.\u2019'],
         ['Nota dalam botol: \u2018Apabila Bangau membersihkan bulu, dadanya kelihatan. Seranglah ketika itu, dan setiap pukulan dikira dua kali. Cincinnya hanya sampai sejauh itu: berlarilah melepasi tepinya.\u2019'],
+        ['Nota dalam botol: ‘Mutiara di teluk ini hanyalah air mata lama laut. Kutiplah dengan lembut dan air pasang akan mengingati kamu.’'],
+        ['Nota dalam botol: ‘Batu Camar hanya menjadi batu apabila laut pasang. Datanglah ketika air pasang dan camar akan berkongsi pemandangan mereka.’'],
+        ['Nota dalam botol: ‘Dari Batu Suar, rumah api kelihatan kecil. Setiap cahaya yang dinyalakan penjaga bermula sebagai percikan seperti milik kamu.’'],
       ],
     },
     tide: { low: 'Air surut', high: 'Air pasang', still: 'Air: berhenti' },
     board: { title: 'Papan Pasang Surut', ebb: 'Lagu air surut: {order}', flood: 'Lagu air pasang: {order} (lagu air surut secara terbalik)', hint: 'Bunyikan loceng ikut susunan. Loceng yang salah hanya mula semula.' },
-    labels: { beach: 'Jalan keluar', village: 'Kampung atas tiang', flats: 'Tanah Lumpur', wreck: 'Kapal Karam', island: 'Rumah Api', cave: 'Gua laut' },
+    labels: { beach: 'Jalan keluar', village: 'Kampung atas tiang', flats: 'Tanah Lumpur', wreck: 'Kapal Karam', island: 'Rumah Api', cave: 'Gua laut', cove: 'Teluk Mutiara', tern: 'Batu Camar', beacon: 'Batu Suar' },
     mapTitle: 'Peta Pantai Moonwake',
     elderToShore: ['Cahaya Batu Hati mengalir menyusuri sungai ke laut, wira. Jauh di pesisir, air pasang sudah berhenti dan rumah api gelap.', 'Ikut jalan sungai di sebelah timur kampung. Pantai Moonwake memerlukan kamu!'],
     elderShoreDone: ['Pantai Moonwake bercahaya semula. Kamulah yang melakukannya, wira!', 'Jalan sungai sentiasa terbuka untuk kamu. Kaca laut dan botol berpesan masih tersembunyi di pesisir.'],

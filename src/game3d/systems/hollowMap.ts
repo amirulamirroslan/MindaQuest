@@ -2,11 +2,11 @@
  * The Crystal Hollow map (v2.22, pure and unit-tested; the canvas drawing is in ui/MapPanel.ts). Same convention as the woods map: north (-z)
  * is up. The square covers the whole cave with a little margin and is centred on it rather than on the world origin.
  */
-import { ECHO_ORDER, ECHO_SPOTS, DOOR_POS, GLIM_POS, GLOWCAP_SPOTS, GROTTO, TABLET_SPOTS, HEART_POS, HOLLOW_EXIT, MURAL_POS, PINK_NOOK, POOL_ROOM, PRISM_POS, SECRET_ROOM, type EchoColor } from './hollowLayout';
+import { ECHO_ORDER, ECHO_SPOTS, DOOR_POS, GALLERY_ROOM, GLIM_POS, GLOWCAP_SPOTS, GROTTO, LAKE_ROOM, SHARD_SPOTS, VAULT_ROOM, TABLET_SPOTS, HEART_POS, HOLLOW_EXIT, MURAL_POS, PINK_NOOK, POOL_ROOM, PRISM_POS, SECRET_ROOM, type EchoColor } from './hollowLayout';
 import type { Vec2 } from './movement3d';
-import type { HollowState } from './hollowQuest';
+import { SECRET_SHARD, onlySecretShardLeft, secretOpen, type HollowState } from './hollowQuest';
 
-export const HOLLOW_MAP = { cx: -2.5, cz: 1.5, half: 47 };
+export const HOLLOW_MAP = { cx: -2.5, cz: -7.5, half: 50 };
 
 export function toHollowMap(x: number, z: number, size: number): { px: number; py: number } {
   const k = size / 2 / HOLLOW_MAP.half;
@@ -17,12 +17,13 @@ export function fromHollowMap(px: number, py: number, size: number): Vec2 {
   return { x: (px - size / 2) / k + HOLLOW_MAP.cx, z: (py - size / 2) / k + HOLLOW_MAP.cz };
 }
 
-export type HollowLandmarkKind = 'gate' | 'prism' | 'grotto' | 'pool' | 'door' | 'heart' | 'pink' | 'mural' | 'glim';
+export type HollowLandmarkKind = 'gate' | 'prism' | 'grotto' | 'pool' | 'door' | 'heart' | 'pink' | 'mural' | 'glim' | 'lake' | 'gallery' | 'vault';
 export interface HollowLandmark { kind: HollowLandmarkKind; x: number; z: number }
 export const HOLLOW_LANDMARKS: readonly HollowLandmark[] = [
   { kind: 'gate', x: HOLLOW_EXIT.x, z: HOLLOW_EXIT.z - 1.5 }, { kind: 'prism', x: PRISM_POS.x, z: PRISM_POS.z }, { kind: 'grotto', x: GROTTO.x, z: GROTTO.z + 2 },
   { kind: 'pool', x: POOL_ROOM.x, z: POOL_ROOM.z + 4 }, { kind: 'door', x: DOOR_POS.x, z: DOOR_POS.z }, { kind: 'heart', x: HEART_POS.x, z: HEART_POS.z },
   { kind: 'pink', x: PINK_NOOK.x, z: PINK_NOOK.z + 2.5 }, { kind: 'mural', x: MURAL_POS.x, z: MURAL_POS.z }, { kind: 'glim', x: GLIM_POS.x, z: GLIM_POS.z },
+  { kind: 'lake', x: LAKE_ROOM.x, z: LAKE_ROOM.z + 5.5 }, { kind: 'gallery', x: GALLERY_ROOM.x, z: GALLERY_ROOM.z + 5 }, { kind: 'vault', x: VAULT_ROOM.x, z: VAULT_ROOM.z + 4.5 },
 ];
 /** Where the secret nook is, drawn on the map only once it has been opened. */
 export const SECRET_MARK: Vec2 = { x: SECRET_ROOM.x, z: SECRET_ROOM.z };
@@ -37,7 +38,10 @@ export function hollowTargets(h: HollowState, step: number, muralSeen: boolean):
     const next: EchoColor = ECHO_ORDER[Math.max(0, Math.min(ECHO_ORDER.length - 1, step))];
     return [ECHO_SPOTS[next]];
   }
-  return h.heartDone ? [] : [HEART_POS];
+  if (!h.heartDone) return [HEART_POS];
+  // v2.31.3: once the story is done, and only the secret-nook shard is left, the star leads to the grotto (mushrooms still hidden), then to the nook
+  if (onlySecretShardLeft(h)) return [secretOpen(h) ? SHARD_SPOTS[SECRET_SHARD] : { x: GROTTO.x, z: GROTTO.z }];
+  return [];
 }
 /** The glowcap mushrooms for the map: only drawn once lit, so the secret is still a discovery. */
 /** The Moon Tablets for the map: only drawn once read, so finding them is still a discovery. */

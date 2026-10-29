@@ -10,7 +10,7 @@ import { ENEMY_DEFS } from './enemies';
 const HERO_R = 0.38;
 /** Flood fill over the floor at 0.5 m, using exactly the rules the game applies (floor margin + solid circles). */
 function reachable(gates: { doorOpen: boolean; secretOpen: boolean }) {
-  const grid = hollowGrid(gates), res = 0.5, x0 = -54, z0 = -44, w = 210, h = 180;
+  const grid = hollowGrid(gates), res = 0.5, x0 = -54, z0 = -62, w = 210, h = 216;
   const open = new Uint8Array(w * h);
   for (let iz = 0; iz < h; iz++) for (let ix = 0; ix < w; ix++) { const x = x0 + ix * res, z = z0 + iz * res; if (onFloor(x, z, WALL_MARGIN) && isClear(grid, x, z, HERO_R)) open[iz * w + ix] = 1; }
   const cell = (p: { x: number; z: number }) => Math.round((p.z - z0) / res) * w + Math.round((p.x - x0) / res);
@@ -51,7 +51,9 @@ describe('crystal hollow layout', () => {
     const closed = reachable({ doorOpen: false, secretOpen: true });
     expect(closed({ x: HEART_POS.x, z: HEART_POS.z + 2.3 })).toBe(false);
     expect(closed({ x: DOOR_POS.x, z: DOOR_POS.z + 3 })).toBe(true); // the tunnel up to the door is open
-    for (const t of hollowMustReach()) if (t.name !== 'heartstone') expect(closed(t.p), t.name).toBe(true); // everything else is reachable without it
+    const behindDoor = ['heartstone', 'shard 7', 'tablet 4']; // the Heart Chamber and the Moon Vault beyond it (v2.32)
+    for (const t of hollowMustReach()) if (!behindDoor.includes(t.name)) expect(closed(t.p), t.name).toBe(true); // everything else is reachable without it
+    for (const name of behindDoor.slice(1)) expect(closed(hollowMustReach().find(t => t.name === name)!.p), name).toBe(false);
   });
   it('keeps the secret nook sealed until the glowcaps are lit', () => {
     const sealed = reachable({ doorOpen: true, secretOpen: false });

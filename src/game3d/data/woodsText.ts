@@ -101,7 +101,7 @@ export const TEXT: Record<Lang, Strings> = {
     ui: {
       attack: 'Attack', dodge: 'Dodge', special: 'Spin', talk: 'Talk', read: 'Read', pause: 'Paused', resume: 'Resume', language: 'Language', startOver: 'Start the adventure over', sure: 'Tap again to be sure',
       outfit: 'Change outfit', accessories: 'Extras', none: 'None', controls: 'Controls', level: 'Level', sound: 'Sound', on: 'On', off: 'Off', boss: 'Old Mossback',
-      endTitle: 'Adventure complete!', endBody: 'You calmed the woods, crossed the Moonlit Gate and woke the Heartstone of the Crystal Hollow. More adventures are on the way.', keepExploring: 'Keep exploring', playAgain: 'Play again',
+      endTitle: 'Crystal Hollow complete!', endBody: 'You calmed the woods, crossed the Moonlit Gate and woke the Heartstone of the Crystal Hollow. The adventure is not over: back in the village, a glowing driftwood arch on the east side leads to Moonwake Shore.', keepExploring: 'Keep exploring', playAgain: 'Play again',
       noWebgl: 'This device cannot show 3D graphics (WebGL). Try another browser or device.', loading: 'Loading the woods…', tapToContinue: 'Tap to continue', moveHint: 'Drag to move',
       use: 'Use', quest: 'Quest', menu: 'Menu', xp: 'XP', soon: 'Soon', levelShort: 'Lv', collapse: 'Show or hide the quest',
     },
@@ -181,7 +181,7 @@ export const TEXT: Record<Lang, Strings> = {
     ui: {
       attack: 'Serang', dodge: 'Elak', special: 'Pusing', talk: 'Bual', read: 'Baca', pause: 'Dijeda', resume: 'Sambung', language: 'Bahasa', startOver: 'Mulakan pengembaraan semula', sure: 'Tekan sekali lagi untuk pasti',
       outfit: 'Tukar pakaian', accessories: 'Tambahan', none: 'Tiada', controls: 'Kawalan', level: 'Tahap', sound: 'Bunyi', on: 'Buka', off: 'Tutup', boss: 'Si Lumut Tua',
-      endTitle: 'Pengembaraan tamat!', endBody: 'Kamu menenangkan hutan, melalui Pintu Cahaya Bulan dan membangunkan Batu Hati di Gua Hablur. Lebih banyak pengembaraan akan datang.', keepExploring: 'Terus meneroka', playAgain: 'Main semula',
+      endTitle: 'Gua Hablur selesai!', endBody: 'Kamu menenangkan hutan, melalui Pintu Cahaya Bulan dan membangunkan Batu Hati di Gua Hablur. Pengembaraan belum tamat: di kampung, gerbang kayu hanyut yang bercahaya di sebelah timur membawa ke Pantai Moonwake.', keepExploring: 'Terus meneroka', playAgain: 'Main semula',
       noWebgl: 'Peranti ini tidak dapat memaparkan grafik 3D (WebGL). Cuba pelayar atau peranti lain.', loading: 'Memuatkan hutan…', tapToContinue: 'Ketik untuk sambung', moveHint: 'Seret untuk bergerak',
       use: 'Guna', quest: 'Pencarian', menu: 'Menu', xp: 'XP', soon: 'Nanti', levelShort: 'Thp', collapse: 'Tunjuk atau sorok pencarian',
     },

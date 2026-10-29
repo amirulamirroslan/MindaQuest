@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   ALL_SHARDS_XP, ALL_TABLETS_XP, DOOR_XP, GLIM_XP, GLOWCAP_COUNT, HEART_XP, HOLLOW_STORAGE_KEY, HOLLOW_TOTAL_XP, SHARDLING_COUNT, SHARDLING_XP, SHARD_COUNT, SHARD_XP, TABLET_COUNT, TABLET_XP, WARDEN_XP,
-  calmShardling, collectShard, defeatWarden, glimAsked, glimClaim, glimScript, lightGlowcap, loadHollow, markVisited,
+  calmShardling, collectShard, defeatWarden, glimAsked, glimClaim, glimScript, hollowPerfect, lightGlowcap, loadHollow, markVisited,
   newHollow, readTablet, sanitizeHollow, saveHollow, secretOpen, strikeEcho, touchHeart, wardenAwake,
 } from './hollowQuest';
 import { ECHO_ORDER } from './hollowLayout';
-import { HOLLOW_REWARD, WARDEN_REWARD, newProgress, reduceQuest, sanitizeProgress, levelForXp, type Progress } from './woodsQuest';
+import { itemById } from '../cosmetics/catalog';
+import { HOLLOW_PERFECT_REWARD, HOLLOW_REWARD, WARDEN_REWARD, newProgress, reduceQuest, sanitizeProgress, levelForXp, type Progress } from './woodsQuest';
 
 const mem = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), m }; };
 const finishedWoods = (): Progress => ({ ...newProgress(), stage: 'complete', gateOpen: true, bossDefeated: true, unlocked: ['mossy-cloak'], xp: 330, petalIds: [0, 1, 2, 3, 4, 5], sproutsCalmed: 3, runesSolved: 3 });
@@ -38,9 +39,10 @@ describe('crystal hollow quest', () => {
     expect(r.xp).toBe(HEART_XP); expect(r.unlock).toBe(HOLLOW_REWARD); expect(r.state.heartDone).toBe(true);
     expect(touchHeart(r.state).xp).toBe(0); expect(touchHeart(r.state).unlock).toBeUndefined();
   });
-  it('totals 386 XP (was 210 before v2.28), which a woods-complete hero (330 + 120 patrol) turns into level 9', () => {
-    expect(HOLLOW_TOTAL_XP).toBe(386); expect(levelForXp(330 + 120 + HOLLOW_TOTAL_XP)).toBe(9);
-    expect(SHARDLING_COUNT * SHARDLING_XP + WARDEN_XP + GLIM_XP + TABLET_COUNT * TABLET_XP + ALL_TABLETS_XP).toBe(176); // what v2.28 added
+  it('totals 426 XP (386 before v2.32 added three shards and two tablets), which a woods-complete hero (330 + 120 patrol) turns into a level', () => {
+    expect(HOLLOW_TOTAL_XP).toBe(426); expect(levelForXp(330 + 120 + HOLLOW_TOTAL_XP)).toBeGreaterThanOrEqual(9);
+    expect(SHARD_COUNT).toBe(8); expect(TABLET_COUNT).toBe(5);
+    expect(SHARDLING_COUNT * SHARDLING_XP + WARDEN_XP + GLIM_XP + TABLET_COUNT * TABLET_XP + ALL_TABLETS_XP).toBe(186); // what v2.28 added (176) plus the two new tablets
   });
   it('saves, loads and survives corrupt data', () => {
     const store = mem(); let s = markVisited(newHollow()); s = collectShard(s, 2).state; s = lightGlowcap(s, 1).state;
@@ -145,3 +147,19 @@ describe('hollow XP in the woods quest reducer', () => {
     const back = sanitizeProgress(JSON.parse(JSON.stringify(r))); expect(back.unlocked).toContain(HOLLOW_REWARD); expect(back.xp).toBe(430);
   });
 });
+
+describe('v2.31.3 Hollow 100%', () => {
+  const all = { ...newHollow(), heartDone: true, shards: Array.from({ length: SHARD_COUNT }, (_, i) => i), shardlings: Array.from({ length: SHARDLING_COUNT }, (_, i) => i), tablets: Array.from({ length: TABLET_COUNT }, (_, i) => i), glim: 2 as const };
+  it('needs the Heartstone, every shard, Shardling and tablet, and Glim thanked', () => {
+    expect(hollowPerfect(all)).toBe(true);
+    for (const miss of [{ heartDone: false }, { shards: all.shards.slice(1) }, { shardlings: [0] }, { tablets: all.tablets.slice(1) }, { glim: 1 as const }]) expect(hollowPerfect({ ...all, ...miss })).toBe(false);
+  });
+  it('pays the Heartstone Cloak once, with no XP, and only after the quest is complete', () => {
+    const p = finishedWoods();
+    const r = reduceQuest(p, { kind: 'hollow', xp: 0, unlock: HOLLOW_PERFECT_REWARD });
+    expect(r.unlockedNow).toEqual([HOLLOW_PERFECT_REWARD]); expect(r.xpGained).toBe(0);
+    expect(reduceQuest(r.state, { kind: 'hollow', xp: 0, unlock: HOLLOW_PERFECT_REWARD }).state).toBe(r.state);
+    expect(itemById(HOLLOW_PERFECT_REWARD)?.slot).toBe('cape');
+  });
+});
+

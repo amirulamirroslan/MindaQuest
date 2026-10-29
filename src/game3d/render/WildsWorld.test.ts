@@ -20,7 +20,7 @@ describe('WildsWorld (headless build)', () => {
     // state: chests, pickups and the thorn barrier follow the save
     w.setState({ zones: [], acorns: [0, 1], pumpkins: [], pearls: [], lanterns: [0], tablets: [], chests: [1], tani: 0, lumut: 2, din: 0, explored: '' }, false);
     w.update(1, 0, 0); w.update(2, -66, 2); w.setNight(1);
-    expect(CHEST_SPOTS.length).toBe(7); expect(ACORN_SPOTS.length).toBe(14); expect(ZONES.length).toBe(12);
+    expect(CHEST_SPOTS.length).toBe(10); expect(ACORN_SPOTS.length).toBe(20); expect(ZONES.length).toBe(15);
     console.log(`WildsWorld: ${meshes} meshes, ${Math.round(tris)} triangles in total (distant zones are hidden at 120 m)`);
   });
 });

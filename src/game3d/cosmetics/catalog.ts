@@ -114,6 +114,8 @@ export const CATALOG: readonly CosmeticItem[] = [
   { id: 'mossy-cloak', slot: 'cape', name: n('Mossy cloak', 'Jubah berlumut'), rarity: 'epic', collection: 'woods', access: { type: 'quest', unlock: 'mossy-cloak' }, kit: ['Rogue_Cape'], variantTint: 0xb4d46a },
   // ---- Crystal Hollow reward (v2.28): the Moon Cape shape in violet crystal, earned by calming the Hollow Warden (a cape tint, the same proven mechanism as the Mossy Cloak)
   { id: 'warden-mantle', slot: 'cape', name: n('Warden\'s Mantle', 'Jubah Penjaga'), rarity: 'epic', collection: 'hollow', access: { type: 'quest', unlock: 'warden-mantle' }, kit: ['Mage_Cape'], variantTint: 0xc59bff },
+  // ---- Crystal Hollow 100% reward (v2.31.3): the Guard Cape shape in Heartstone gold, earned by finding every secret in the Hollow (a cape tint, like the Mossy Cloak and the Warden's Mantle)
+  { id: 'heartstone-cloak', slot: 'cape', name: n('Heartstone Cloak', 'Jubah Batu Hati'), rarity: 'legendary', collection: 'hollow', access: { type: 'quest', unlock: 'heartstone-cloak' }, kit: ['Knight_Cape'], variantTint: 0xffd36b },
   // ---- main-hand weapons
   { id: 'sword-hero', slot: 'weapon', name: n('Hero Sword', 'Pedang Wira'), rarity: 'common', collection: 'starter', access: free, kit: ['1H_Sword'], weapon: 'sword1h' },
   { id: 'dagger-ranger', slot: 'weapon', name: n('Ranger Dagger', 'Keris Renjer'), rarity: 'common', collection: 'rangers', access: free, kit: ['Knife'], weapon: 'dagger' },

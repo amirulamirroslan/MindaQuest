@@ -3,12 +3,12 @@
  * (-z) is up. The square covers the whole coast with a little margin and is centred on it rather than on the world origin.
  */
 import {
-  BUOYS, BUOY_SPOTS, BOTTLE_SPOTS, CAVE, FLATS, HUB, ISLAND, LAMP_POS, MAK_POS, SHORE_EXIT, TIDE_BOARD_POS, WRECK, type BuoyId,
+  BEACON, BUOYS, BUOY_SPOTS, BOTTLE_SPOTS, CAVE, COVE, FLATS, TERN, HUB, ISLAND, LAMP_POS, MAK_POS, SHORE_EXIT, TIDE_BOARD_POS, WRECK, type BuoyId,
 } from './shoreLayout';
 import type { Vec2 } from './movement3d';
 import { SONGS, causewayOpen, tideSolved, type ShoreState } from './shoreQuest';
 
-export const SHORE_MAP = { cx: 0, cz: -13, half: 56 };
+export const SHORE_MAP = { cx: 0, cz: -9, half: 62 };
 export function toShoreMap(x: number, z: number, size: number): { px: number; py: number } {
   const k = size / 2 / SHORE_MAP.half;
   return { px: size / 2 + (x - SHORE_MAP.cx) * k, py: size / 2 + (z - SHORE_MAP.cz) * k };
@@ -18,11 +18,12 @@ export function fromShoreMap(px: number, py: number, size: number): Vec2 {
   return { x: (px - size / 2) / k + SHORE_MAP.cx, z: (py - size / 2) / k + SHORE_MAP.cz };
 }
 
-export type ShoreLandmarkKind = 'beach' | 'village' | 'flats' | 'wreck' | 'island' | 'cave';
+export type ShoreLandmarkKind = 'beach' | 'village' | 'flats' | 'wreck' | 'island' | 'cave' | 'cove' | 'tern' | 'beacon';
 export interface ShoreLandmark { kind: ShoreLandmarkKind; x: number; z: number }
 export const SHORE_LANDMARKS: readonly ShoreLandmark[] = [
   { kind: 'beach', x: SHORE_EXIT.x, z: SHORE_EXIT.z - 2 }, { kind: 'village', x: HUB.x, z: HUB.z - 1 }, { kind: 'flats', x: FLATS.x + 1, z: FLATS.z + 3 },
   { kind: 'wreck', x: WRECK.x - 2, z: WRECK.z + 4 }, { kind: 'island', x: ISLAND.x + 5.5, z: ISLAND.z + 2 }, { kind: 'cave', x: CAVE.x, z: CAVE.z + 1 },
+  { kind: 'cove', x: COVE.x, z: COVE.z + 4.5 }, { kind: 'tern', x: TERN.x, z: TERN.z + 4.5 }, { kind: 'beacon', x: BEACON.x, z: BEACON.z + 3.5 },
 ];
 export const BUOY_MARKS: readonly { id: BuoyId; x: number; z: number }[] = BUOYS.map(id => ({ id, x: BUOY_SPOTS[id].x, z: BUOY_SPOTS[id].z }));
 
