@@ -1,6 +1,0 @@
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#102f22;overscroll-behavior:none;touch-action:none;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-body{min-width:280px;min-height:280px;font-family:"Trebuchet MS",Arial,sans-serif;position:fixed;inset:0}
-/* The game fills the visible viewport. 100vh is the fallback; 100dvh follows the browser toolbars that grow and shrink on phones. */
-#game{position:fixed;inset:0;width:100%;height:100vh;height:100dvh;overflow:hidden;background:#102f22;touch-action:none}
-canvas{display:block;image-rendering:crisp-edges;image-rendering:pixelated;touch-action:none;outline:none}
