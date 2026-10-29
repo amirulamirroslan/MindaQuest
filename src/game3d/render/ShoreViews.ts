@@ -283,6 +283,10 @@ export class HeronView extends EnemyView {
 /** The look of one of the shore's two people. */
 interface NpcLook { coat: number; trim: number; hat: number; skin: number; hair: number; tall: boolean; beard: boolean; lantern: boolean }
 const MAK: NpcLook = { coat: 0x2f6fa8, trim: 0xf0d27a, hat: 0xf4f0e4, skin: 0xd9a47c, hair: 0xe8e4dc, tall: false, beard: true, lantern: false };
+/** v2.31: the three people of the wider woods share the shore people's model with their own colours. */
+const TANI: NpcLook = { coat: 0x5f8f3a, trim: 0xe8c870, hat: 0xe8c870, skin: 0xc98f68, hair: 0x4a3a30, tall: false, beard: false, lantern: false };
+const LUMUT: NpcLook = { coat: 0x4a6a4a, trim: 0xb8e08a, hat: 0x3f5a3a, skin: 0xd9a47c, hair: 0xe8e4dc, tall: true, beard: true, lantern: true };
+const DIN: NpcLook = { coat: 0x5f7a92, trim: 0xf0e8d0, hat: 0x7a8a9a, skin: 0xb98058, hair: 0x6a6a70, tall: false, beard: true, lantern: false };
 const KEEPER: NpcLook = { coat: 0x7a4a3a, trim: 0xe8c860, hat: 0x2b3a5c, skin: 0xc98f68, hair: 0x4a3a30, tall: true, beard: false, lantern: true };
 
 /** A friendly talker for the shore: bobs, turns to the hero, bounces while talking, waves hello, floats a "!" when he has something to say. */
@@ -290,8 +294,8 @@ export class ShoreNpc {
   readonly root = new Group(); private readonly body = new Group(); private readonly head = new Group(); private readonly armR = new Group(); private readonly marker = new Group();
   private readonly lanternGlow = glowSprite(0xffe9a0, 1.2, 0.5);
   private talk = 0; private talking = false; private wave_ = 0; private last = -1; private lit = 0; private litTarget = 0;
-  constructor(kind: 'mak' | 'keeper') {
-    const L = kind === 'mak' ? MAK : KEEPER, h = L.tall ? 1.0 : 0.9;
+  constructor(kind: 'mak' | 'keeper' | 'tani' | 'lumut' | 'din') {
+    const L = kind === 'mak' ? MAK : kind === 'tani' ? TANI : kind === 'lumut' ? LUMUT : kind === 'din' ? DIN : KEEPER, h = L.tall ? 1.0 : 0.9;
     this.root.add(blobShadow(0.5));
     const k = new Kit();
     k.ball(0.34, 0, 0.62 * h, 0, L.coat, 1, 1.25 * h, 0.85, 2); k.cyl(0.36, 0.4, 0.08, 10, 0, 0.1, 0, L.trim); k.box(0.5, 0.06, 0.34, 0, 0.78 * h, 0.02, L.trim);
@@ -303,7 +307,7 @@ export class ShoreNpc {
     for (const s of [-1, 1]) { hk.ball(0.035, s * 0.09, 0.03, 0.21, 0x1c1c26, 1, 1.3, 0.6, 0); hk.ball(0.04, s * 0.15, -0.03, 0.18, 0xf0a090, 1, 0.7, 0.5, 1); hk.add(new BoxGeometry(0.1, 0.025, 0.03), L.hair, M(s * 0.09, 0.1, 0.2, 0, 0, s * -0.15)); }
     hk.ball(0.04, 0, -0.02, 0.24, 0xc88a64, 1, 1, 1.2, 1);
     if (L.beard) { hk.ball(0.17, 0, -0.17, 0.1, L.hair, 1.2, 1, 0.9, 1); hk.ball(0.08, -0.07, -0.06, 0.22, L.hair, 1.5, 0.5, 1, 1); hk.ball(0.08, 0.07, -0.06, 0.22, L.hair, 1.5, 0.5, 1, 1); }
-    if (kind === 'mak') { hk.cyl(0.26, 0.27, 0.12, 12, 0, 0.17, 0, L.hat); hk.cyl(0.19, 0.23, 0.14, 12, 0, 0.27, 0, L.hat); hk.cyl(0.285, 0.285, 0.03, 12, 0, 0.12, 0, 0x2f4a78); hk.ball(0.04, 0, 0.14, 0.27, L.trim, 1, 1, 0.5, 0); }   // a sailor's cap
+    if (kind === 'mak' || kind === 'tani' || kind === 'din') { hk.cyl(0.26, 0.27, 0.12, 12, 0, 0.17, 0, L.hat); hk.cyl(0.19, 0.23, 0.14, 12, 0, 0.27, 0, L.hat); hk.cyl(0.285, 0.285, 0.03, 12, 0, 0.12, 0, 0x2f4a78); hk.ball(0.04, 0, 0.14, 0.27, L.trim, 1, 1, 0.5, 0); }   // a sailor's cap
     else { hk.cyl(0.25, 0.28, 0.07, 12, 0, 0.12, 0, L.hat); hk.cyl(0.2, 0.24, 0.16, 12, 0, 0.23, 0, L.hat); hk.box(0.4, 0.03, 0.2, 0, 0.14, 0.2, 0x1a2540); hk.ball(0.04, 0, 0.18, 0.25, L.trim, 1, 1, 0.5, 0); hk.ball(0.12, 0, -0.14, 0.12, 0xb8b0a0, 1.2, 0.8, 0.9, 1); }   // a keeper's peaked cap and grey whiskers
     this.head.position.y = (h > 0.95 ? 1.28 : 1.1); addMesh(this.head, hk.build(0, 1), withPaint(new MeshLambertMaterial({ vertexColors: true })), 0.025); this.body.add(this.head);
     const ak = new Kit(); ak.add(new CylinderGeometry(0.06, 0.07, 0.4, 6), L.coat, M(0.04, -0.2, 0.05, 0.3, 0, 0.15)); ak.ball(0.07, 0.07, -0.4, 0.12, L.skin, 1, 1, 1, 1);

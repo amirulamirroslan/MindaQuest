@@ -6,6 +6,11 @@
 import { TEXT, type Lang, type Strings } from '../data/woodsText';
 import { HOUSES } from '../systems/layout3d';
 import type { Vec2 } from '../systems/movement3d';
+import { WILDS_TEXT, type WildsLandmarkKind } from '../data/wildsText';
+import { visibleChests, visibleWildsMarks } from '../systems/wildsMap';
+import { EXPLORE_CELL, EXPLORE_HALF, EXPLORE_N, exploredAt, type WildsState } from '../systems/wildsQuest';
+import { ZONES } from '../systems/expansion';
+import { MIRROR, PATHS } from '../systems/expansionShape';
 import { LANDMARKS, MAP_EXTENT, headingArrow, toMap, type LandmarkKind } from '../systems/mapView';
 import { POND, RUINS, TRAIL, VILLAGE, WORLD_RADIUS, heightAt } from '../systems/worldShape';
 import { icon } from './icons';
@@ -29,13 +34,15 @@ const LABEL_AT: Record<LandmarkKind, readonly [number, number, CanvasTextAlign]>
   tree: [0, 26, 'center'], fairy: [-16, 0, 'right'], stone: [16, 0, 'left'], gate: [-14, 20, 'right'],
 };
 
-export interface MapFrame { x: number; z: number; heading: number; targets: readonly Vec2[]; hollow?: HollowState; shore?: ShoreState }
+const ZONES_TOTAL = ZONES.length;
+export interface MapFrame { x: number; z: number; heading: number; targets: readonly Vec2[]; hollow?: HollowState; shore?: ShoreState; wilds?: WildsState }
 
 export class MapPanel {
   readonly root: HTMLElement;
   private readonly canvas: HTMLCanvasElement; private readonly ctx: CanvasRenderingContext2D;
   private readonly base = document.createElement('canvas');
   private area: MapArea = 'woods'; private lang: Lang;
+  private readonly fog = document.createElement('canvas'); private fogKey = '';
   private s: Strings; private open_ = false; private baseSize = 0; private frame: MapFrame = { x: 0, z: 0, heading: 0, targets: [] };
   private title!: HTMLElement; private youLab!: HTMLElement; private goalLab!: HTMLElement; private hint!: HTMLElement; private closeBtn!: HTMLButtonElement;
 
@@ -83,7 +90,7 @@ export class MapPanel {
     const k = size / 2 / MAP_EXTENT, u = size / 500, mid = size / 2;
     c.fillStyle = '#ecd9ab'; c.fillRect(0, 0, size, size);
     c.save(); c.beginPath(); c.arc(mid, mid, WORLD_RADIUS * k, 0, Math.PI * 2); c.clip();
-    const N = 64, cell = (WORLD_RADIUS * 2) / N;
+    const N = 112, cell = (WORLD_RADIUS * 2) / N;
     for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
       const wx = -WORLD_RADIUS + (i + 0.5) * cell, wz = -WORLD_RADIUS + (j + 0.5) * cell, h = heightAt(wx, wz), t = Math.max(0, Math.min(1, h / 7));
       const r = Math.round(150 - 70 * t), g = Math.round(205 - 70 * t), b = Math.round(105 - 45 * t);
@@ -94,6 +101,9 @@ export class MapPanel {
     const pp = toMap(POND.x, POND.z, size); c.fillStyle = '#5aa9ee'; c.strokeStyle = '#2f6fb0'; c.lineWidth = 2 * u; c.beginPath(); c.ellipse(pp.px, pp.py, POND.r * k * 1.2, POND.r * k, 0, 0, Math.PI * 2); c.fill(); c.stroke();
     c.strokeStyle = '#f3dfae'; c.lineWidth = 5 * u; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath();
     TRAIL.forEach((t, i) => { const p = toMap(t.x, t.z, size); if (i) c.lineTo(p.px, p.py); else c.moveTo(p.px, p.py); }); c.stroke();
+    // v2.31: the new trails and Mirror Pond (the fog layer hides whatever the hero has not seen yet)
+    c.strokeStyle = '#f3dfae'; c.lineWidth = 3.6 * u; for (const pa of PATHS) { c.beginPath(); pa.pts.forEach((t, i) => { const p = toMap(t.x, t.z, size); if (i) c.lineTo(p.px, p.py); else c.moveTo(p.px, p.py); }); c.stroke(); }
+    { const mp = toMap(MIRROR.x, MIRROR.z, size); c.fillStyle = '#5aa9ee'; c.strokeStyle = '#2f6fb0'; c.lineWidth = 2 * u; c.beginPath(); c.arc(mp.px, mp.py, MIRROR.r * k, 0, Math.PI * 2); c.fill(); c.stroke(); c.fillStyle = '#c8b57a'; c.beginPath(); c.arc(mp.px, mp.py, MIRROR.island * k, 0, Math.PI * 2); c.fill(); }
     for (const h of HOUSES) { const p = toMap(h.x, h.z, size), s = Math.max(5 * u, h.r * k * 0.9); c.save(); c.translate(p.px, p.py); c.rotate(-h.rot); c.fillStyle = '#c0764a'; c.strokeStyle = '#3b2414'; c.lineWidth = 1.6 * u; c.fillRect(-s / 2, -s / 2, s, s); c.strokeRect(-s / 2, -s / 2, s, s); c.restore(); }
     c.restore();
     c.strokeStyle = '#3b2414'; c.lineWidth = 4 * u; c.beginPath(); c.arc(mid, mid, WORLD_RADIUS * k, 0, Math.PI * 2); c.stroke();
@@ -217,9 +227,61 @@ export class MapPanel {
     c.restore();
   }
 
+  /** v2.31: fog over the ground the hero has not seen, then the named places, chests and the count. */
+  private drawWilds(c: CanvasRenderingContext2D, size: number, u: number, w: WildsState): void {
+    const key = `${size}|${w.explored}`;
+    if (key !== this.fogKey) {
+      this.fogKey = key; this.fog.width = this.fog.height = size; const f = this.fog.getContext('2d')!; f.clearRect(0, 0, size, size);
+      const k = size / 2 / MAP_EXTENT, cs = EXPLORE_CELL * k + 1;
+      f.fillStyle = 'rgba(236,217,171,0.94)';
+      for (let iz = 0; iz < EXPLORE_N; iz++) for (let ix = 0; ix < EXPLORE_N; ix++) {
+        const wx = (ix + 0.5) * EXPLORE_CELL - EXPLORE_HALF, wz = (iz + 0.5) * EXPLORE_CELL - EXPLORE_HALF;
+        if (!exploredAt(w, wx, wz)) { const p = toMap(wx - EXPLORE_CELL / 2, wz - EXPLORE_CELL / 2, size); f.fillRect(p.px, p.py, cs, cs); }
+      }
+      f.globalCompositeOperation = 'destination-in'; f.beginPath(); f.arc(size / 2, size / 2, WORLD_RADIUS * k + 2, 0, Math.PI * 2); f.fill();   // keep the fog inside the map's circle
+    }
+    c.drawImage(this.fog, 0, 0);
+    const T = WILDS_TEXT[this.lang], fs = Math.max(10 * (size / 500) * 1.2, size * 0.03);
+    c.save(); c.font = `700 ${fs}px system-ui, sans-serif`; c.textBaseline = 'middle'; c.lineJoin = 'round';
+    for (const m of visibleWildsMarks(w)) {
+      const p = toMap(m.x, m.z, size); this.wildsGlyph(c, m.kind, p.px, p.py, u);
+      c.textAlign = 'center'; c.lineWidth = fs * 0.22; c.strokeStyle = 'rgba(255,248,225,.95)'; c.strokeText(T.labels[m.kind], p.px, p.py + 17 * u); c.fillStyle = '#3b2414'; c.fillText(T.labels[m.kind], p.px, p.py + 17 * u);
+    }
+    for (const ch of visibleChests(w)) {
+      const p = toMap(ch.x, ch.z, size); c.lineWidth = 1.6 * u; c.strokeStyle = '#3b2414'; c.fillStyle = ch.open ? '#b9a98a' : '#ffd24a';
+      c.fillRect(p.px - 5 * u, p.py - 3.5 * u, 10 * u, 7 * u); c.strokeRect(p.px - 5 * u, p.py - 3.5 * u, 10 * u, 7 * u); if (!ch.open) { c.fillStyle = '#8a5a2e'; c.fillRect(p.px - 5 * u, p.py - 3.5 * u, 10 * u, 2.5 * u); }
+    }
+    c.textAlign = 'left'; c.lineWidth = fs * 0.22; c.strokeStyle = 'rgba(255,248,225,.95)'; const txt = T.map.discovered.replace('{n}', String(w.zones.length)).replace('{total}', String(ZONES_TOTAL));
+    c.strokeText(txt, size * 0.03, size * 0.965); c.fillStyle = '#3b2414'; c.fillText(txt, size * 0.03, size * 0.965);
+    c.restore();
+  }
+  private wildsGlyph(c: CanvasRenderingContext2D, kind: WildsLandmarkKind, x: number, y: number, u: number): void {
+    c.save(); c.translate(x, y); c.lineWidth = 1.6 * u; c.strokeStyle = '#3b2414'; c.lineJoin = 'round';
+    const disc = (r: number, col: string, dx = 0, dy = 0): void => { c.fillStyle = col; c.beginPath(); c.arc(dx, dy, r, 0, Math.PI * 2); c.fill(); c.stroke(); };
+    const tri = (w2: number, h: number, col: string): void => { c.fillStyle = col; c.beginPath(); c.moveTo(0, -h); c.lineTo(w2, h * 0.7); c.lineTo(-w2, h * 0.7); c.closePath(); c.fill(); c.stroke(); };
+    switch (kind) {
+      case 'mill': c.fillStyle = '#fff4d6'; c.fillRect(-3 * u, -2 * u, 6 * u, 9 * u); c.strokeRect(-3 * u, -2 * u, 6 * u, 9 * u); c.beginPath(); c.moveTo(-8 * u, -8 * u); c.lineTo(8 * u, 4 * u); c.moveTo(8 * u, -8 * u); c.lineTo(-8 * u, 4 * u); c.stroke(); break;
+      case 'hearthfield': c.fillStyle = '#fff4d6'; c.fillRect(-7 * u, -1 * u, 14 * u, 8 * u); c.strokeRect(-7 * u, -1 * u, 14 * u, 8 * u); c.translate(0, -1 * u); tri(9 * u, 6 * u, '#c8573b'); break;
+      case 'orchard': disc(5 * u, '#f6a8cc', -5 * u, 0); disc(5 * u, '#9ad457', 5 * u, 0); break;
+      case 'kite': c.fillStyle = '#ff7a8a'; c.beginPath(); c.moveTo(0, -9 * u); c.lineTo(6 * u, 0); c.lineTo(0, 8 * u); c.lineTo(-6 * u, 0); c.closePath(); c.fill(); c.stroke(); break;
+      case 'lookout': tri(10 * u, 8 * u, '#8a7a5a'); c.fillStyle = '#ffd24a'; c.fillRect(-2 * u, -12 * u, 4 * u, 5 * u); break;
+      case 'mirror': break;
+      case 'thicket': disc(6 * u, '#245a34', -5 * u, 0); disc(6 * u, '#2f7d3a', 5 * u, -2 * u); break;
+      case 'heartwood': disc(9 * u, '#7ff0d0', 0, -2 * u); c.fillStyle = '#7a4a22'; c.fillRect(-2 * u, 5 * u, 4 * u, 5 * u); break;
+      case 'grove': for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; disc(3.2 * u, '#f6a8cc', Math.cos(a) * 5 * u, Math.sin(a) * 5 * u); } disc(2.4 * u, '#ffe08a'); break;
+      case 'cave': c.fillStyle = '#3a3646'; c.beginPath(); c.arc(0, 4 * u, 8 * u, Math.PI, 0); c.closePath(); c.fill(); c.stroke(); break;
+      case 'steps': for (const dx of [-6, 0, 6]) { c.fillStyle = '#d8dde2'; c.fillRect((dx - 2) * u, -7 * u, 4 * u, 13 * u); c.strokeRect((dx - 2) * u, -7 * u, 4 * u, 13 * u); } break;
+      case 'moon': for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2; disc(2 * u, '#c6ccd2', Math.cos(a) * 7 * u, Math.sin(a) * 7 * u); } break;
+      case 'mist': c.strokeStyle = '#3b2414'; c.lineWidth = 4 * u; c.beginPath(); c.arc(0, 2 * u, 7 * u, Math.PI, 0); c.moveTo(-7 * u, 2 * u); c.lineTo(-7 * u, 8 * u); c.moveTo(7 * u, 2 * u); c.lineTo(7 * u, 8 * u); c.stroke(); c.strokeStyle = '#bfe4ff'; c.lineWidth = 2 * u; c.stroke(); break;
+      case 'door': c.fillStyle = '#6a6e78'; c.fillRect(-5 * u, -6 * u, 10 * u, 12 * u); c.strokeRect(-5 * u, -6 * u, 10 * u, 12 * u); break;
+    }
+    c.restore();
+  }
+
   private draw(time: number): void {
     this.layout(); const c = this.ctx, size = this.canvas.width, u = size / 500;
     c.clearRect(0, 0, size, size); c.drawImage(this.base, 0, 0);
+    if (this.area === 'woods' && this.frame.wilds) this.drawWilds(c, size, u, this.frame.wilds);
     const pulse = 0.5 + 0.5 * Math.sin(time * 4);
     if (this.area === 'hollow') this.drawHollowMarks(c, size, u); else if (this.area === 'shore') this.drawShoreMarks(c, size, u);
     for (const t of this.frame.targets) {

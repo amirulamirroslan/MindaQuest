@@ -1,24 +1,9 @@
-# Next Claude Prompt — MindQuest
+# Prompt for the next Claude session
 
-Continue development of the existing MindQuest project in this repository.
+Continue MindaQuest (v2.31). Read `HANDOVER.md` and `docs/V2_31_NOTES.md` first. It is a Three.js game, not Phaser.
 
-Before changing code:
-1. Read HANDOVER.md and inspect the existing project documentation.
-2. Review the current Git branch and working tree.
-3. Understand the existing game architecture, assets, and implemented features.
-4. Do not rebuild the game from scratch or remove existing functionality.
+First job: **look at it.** Run `npm run dev`, open the woods at desktop and a phone-sized viewport, and walk every path (Orchard Lane, Pond Road, Mossbark Trail, Old Steps Road, Mist Road, Fern Trail, Lookout Trail, Meadow Path, Heartwood shortcut). Check: structure art (windmill, tower, colonnade, Moon Circle, cave, grove, Mistfall Gate), lighting/fog, water, pickups, chests, NPC facing and markers, map fog/labels, touch use-button, Low-quality frame rate. Fix what looks wrong; keep the approved chibi hero, combat, quests and wardrobe untouched.
 
-During development:
-- Make focused, incremental improvements.
-- Preserve the established visual direction and mobile-friendly gameplay.
-- Run relevant tests and the production build after meaningful changes.
-- Commit and push working milestones to mindquest-cloud-development.
-- Never force-push or overwrite main.
-- Keep secrets and credentials out of Git.
+Then, if asked: (1) build Mistfall Highlands behind the gate at (62,-66) following the Shore/Hollow pattern (own world, save, text, map); (2) the Undercroft door; (3) native-speaker review of `data/wildsText.ts` Malay; (4) tune wilds XP.
 
-Before ending the session, regardless of whether the task is complete:
-- Update HANDOVER.md with completed work, actual test/build results, known issues, and pending tasks.
-- Update this file with the exact next steps.
-- Create a versioned ZIP checkpoint that excludes node_modules, .git, and secrets.
-- Commit and push the handover files and completed source changes.
-- Do not claim tests, builds, backups, or changes succeeded unless verified.
+Rules: no new dependencies, no framework migration, keep every existing save loading (new state goes in its own storage key), run `npx vitest run` and `npm run build` before reporting, update HANDOVER.md.

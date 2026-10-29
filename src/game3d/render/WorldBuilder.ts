@@ -50,7 +50,7 @@ export function buildWorld(scene: Scene, quality: Quality = 'high'): BuiltWorld 
   const sun = new DirectionalLight(0xffe2a4, 2.05); sun.position.set(-42, 38, 24); scene.add(sun);
 
   let q: QualitySettings = SETTINGS[quality];
-  const terrain = buildTerrain(layout, quality === 'low' ? 110 : quality === 'medium' ? 130 : 190); group.add(terrain);
+  const terrain = buildTerrain(layout, quality === 'low' ? 1.0 : quality === 'medium' ? 0.8 : 0.6); terrain.buildAround(0, 27, 36); group.add(terrain.group);
   const scenery = new Scenery(layout, q); group.add(scenery.group);
   sun.castShadow = q.shadowMap > 0;
   const configureShadow = () => {
@@ -93,7 +93,7 @@ export function buildWorld(scene: Scene, quality: Quality = 'high'): BuiltWorld 
     },
     sun,
     follow(t, x, z, opts) {
-      if (opts?.scenery !== false) scenery.update(t, x, z);
+      if (opts?.scenery !== false) { scenery.update(t, x, z); terrain.update(x, z, 2); }
       if (!sun.castShadow) return;
       // keep the shadow window centred on the hero, snapped to whole shadow texels so shadows do not shimmer while walking
       const tx = Math.round(x / texel) * texel, tz = Math.round(z / texel) * texel;

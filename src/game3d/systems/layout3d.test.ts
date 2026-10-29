@@ -71,7 +71,8 @@ describe('world layout', () => {
     expect(standable).toBeGreaterThanOrEqual(10); expect(1.9).toBeLessThan(RUNE_STONE_RANGE);
     expect(heightAt(RUNE_STONE_POS.x, RUNE_STONE_POS.z)).toBeLessThan(0.6);
   });
-  it('rises into hills at the rim', () => { expect(heightAt(0, 44)).toBeGreaterThan(3); });
+  it('rises into hills at the rim (the glade is still ringed by a ridge)', () => { expect(heightAt(-31, -31)).toBeGreaterThan(3); });
+  it('cuts a pass through the ridge wherever a path crosses it (v2.31)', () => { expect(heightAt(0, 44)).toBeLessThan(1.5); expect(heightAt(46, 8)).toBeLessThan(1.5); expect(heightAt(-48, 6)).toBeLessThan(1.5); });
   it('keeps the points of interest clear of trees and out of the way of the quest', () => {
     const layout = buildWorldLayout();
     for (const p of [ANCIENT_TREE_POS, POND_POS, FAIRY_RING_POS]) for (const t of layout.trees) expect(Math.hypot(t.x - p.x, t.z - p.z)).toBeGreaterThan(2.5);

@@ -71,7 +71,11 @@ export type QuestEvent =
   /** XP (and at most the Hollow's reward) earned in the Crystal Hollow. Only counts once the woods quest is complete, since that is the only way in. */
   | { kind: 'hollow'; xp: number; unlock?: string }
   /** v2.29: XP (and the shore's rewards, one or several) earned on Moonwake Shore. Only counts once the woods quest is complete, since that is the only way there. */
-  | { kind: 'shore'; xp: number; unlocks?: readonly string[] };
+  | { kind: 'shore'; xp: number; unlocks?: readonly string[] }
+  /** v2.31: XP earned in the optional wider woods (see systems/wildsQuest.ts). Counts at any stage: the new paths are open from the start. */
+  | { kind: 'wilds'; xp: number };
+/** The most XP one `wilds` event may carry (the biggest single prize is 30; this is only a sanity limit). */
+export const WILDS_EVENT_MAX_XP = 100;
 
 export const newProgress = (): Progress => ({
   stage: 'talk', petalIds: [], sproutsCalmed: 0, bossDefeated: false, xp: 0, gateOpen: false, unlocked: [], runesSolved: 0, runeMistakes: 0, runeTier: 1, bonusXp: 0,
@@ -154,6 +158,12 @@ export function reduceQuest(prev: Progress, e: QuestEvent): QuestResult {
       if (gain === 0 && !unlockedNow.length) return done(prev, 0, null, prev);
       s.xp += gain; s.unlocked.push(...unlockedNow);
       return done(s, gain, null, prev, unlockedNow);
+    }
+    case 'wilds': {
+      const gain = Number.isFinite(e.xp) ? Math.min(WILDS_EVENT_MAX_XP, Math.max(0, Math.floor(e.xp))) : 0;
+      if (gain === 0) return done(prev, 0, null, prev);
+      s.xp += gain;
+      return done(s, gain, null, prev);
     }
     case 'returned': {
       if (s.stage !== 'return') return done(prev, 0, null, prev);

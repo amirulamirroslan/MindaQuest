@@ -50,7 +50,7 @@ const place = (g: BufferGeometry, x: number, y: number, z: number, ry = 0, mater
 // ---------------------------------------------------------------------------------------------------------------- village
 const WALL = [0xf0e2bc, 0xe6d3a4, 0xf2dcc4], ROOF = [0xc8573b, 0x3f84a0, 0x9c5a3c], TIMBER = 0x6e4a30, STONE = 0xa7a69a;
 
-function houseGeometry(i: number): BufferGeometry {
+export function houseGeometry(i: number): BufferGeometry {
   const k = new Kit(); const wall = WALL[i % 3], roof = ROOF[i % 3];
   const W = 3, H = 2, D = 2.6;
   k.box(W + 0.25, 0.4, D + 0.25, 0, 0.2, 0, STONE);                                    // stone foundation

@@ -41,6 +41,14 @@ import {
   BONUS_XP_CAP, PETALS_NEEDED, SPROUTS_NEEDED, levelForXp, loadProgress, newProgress, reduceQuest, saveProgress, xpIntoLevel, type Progress, type QuestEvent, type WoodsStage,
 } from './systems/woodsQuest';
 import { PLAY_RADIUS, heightAt } from './systems/worldShape';
+import { WildsWorld } from './render/WildsWorld';
+import { WILDS_TEXT } from './data/wildsText';
+import {
+  ACORN_COUNT, ACORN_XP, LANTERN_COUNT, PEARL_COUNT, PUMPKIN_COUNT, TABLET_COUNT as WILDS_TABLET_COUNT, asked as wildsAsked, claim as wildsClaim, collectAcorn, collectPearl, collectPumpkin, discoverZone, errandCount, exploredShare,
+  lightLantern, loadWilds, markExplored, newWilds, openChest, readTablet as readWildsTablet, saveWilds, script as wildsScript, thornsOpen, zoneAt, CHEST_COUNT_, WHO, type Who, type WildsState,
+} from './systems/wildsQuest';
+import { ACORN_SPOTS, CHEST_SPOTS, LANTERN_SPOTS, MIST_GATE, PEARL_SPOTS, PEOPLE, PUMPKIN_SPOTS, SIGN_SPOTS, TABLET_SPOTS as WILDS_TABLET_SPOTS, UNDERCROFT_DOOR, ZONES, zoneById } from './systems/expansion';
+import { ColliderGrid } from './systems/colliders';
 import { Hud3D } from './ui/Hud3D';
 import { HollowWorld, ECHO_HEX, HOLLOW_LOOK } from './render/HollowWorld';
 import {
@@ -119,7 +127,10 @@ export class Game3D {
   private readonly glim = new GlimModel();
   private glimFacing = 0; private glimGreeted = false; private weakTipShown = false; private wardenAnnounced = false;
   /** Who the hero is facing during a conversation (the Elder when null; Glim or a tablet in the Hollow). */
-  private talkAt: { x: number; z: number } | null = null; private talkWho: 'glim' | 'tablet' | 'mak' | 'keeper' | 'bottle' | null = null;
+  private talkAt: { x: number; z: number } | null = null; private talkWho: 'glim' | 'tablet' | 'mak' | 'keeper' | 'bottle' | 'wilds' | null = null;
+  /** v2.31 The wider woods: its own save, its world (a child of the woods world, so it hides with it), the thorn barrier and the short-lived dialogue/save timers. */
+  wilds: WildsState = loadWilds();
+  private wildsWorld!: WildsWorld; private thornGrid = new ColliderGrid([]); private wildsTalkWho: Who | null = null; private wildsSaveT = 0; private wildsExploreT = 0; private wildsTipShown = false;
   private readonly runeStone = new RuneStoneModel();
   private fireflies!: Fireflies3D;
   private butterflies!: Butterflies3D;
@@ -228,6 +239,8 @@ export class Game3D {
     this.fireflies = new Fireflies3D(this.scene);
     this.butterflies = new Butterflies3D(this.scene, this.quality === 'high' ? 10 : this.quality === 'medium' ? 7 : 4);
     castShadows(this.mak.root); castShadows(this.keeper.root);
+    this.wildsWorld = new WildsWorld(this.world.group); this.wildsWorld.setState(this.wilds); this.thornGrid = new ColliderGrid(this.world.layout.extras.thorns);
+    for (const w of WHO) castShadows(this.wildsWorld.npcs[w].root);
     this.scene.add(this.hero.root, this.elder.root, this.runeStone.root, this.glim.root, this.mak.root, this.keeper.root);
     this.mak.root.position.set(MAK_POS.x, 0.02, MAK_POS.z); this.keeper.root.position.set(KEEPER_POS.x, 0.02, KEEPER_POS.z); this.mak.root.visible = this.keeper.root.visible = false; this.makFacing = Math.PI * 0.2; this.keeperFacing = Math.PI * 0.6;
     this.scene.add(this.shoreArch());
@@ -436,7 +449,7 @@ export class Game3D {
     if (this.faintT !== null || this.combat.busy) return;
     if (this.area === 'hollow') { this.useHollow(); return; }
     if (this.area === 'shore') { this.useShore(); return; }
-    if (!this.nearElder()) { if (this.nearRuneStone()) this.openPuzzle(); return; }
+    if (!this.nearElder()) { const w = this.wildsTarget(); if (w && !this.nearRuneStone()) { this.useWilds(w); return; } if (this.nearRuneStone()) this.openPuzzle(); return; }
     const stage = this.progress.stage;
     this.input.releaseAll(); this.combat.clearBuffer(); this.vel.x = this.vel.z = 0;
     this.startHint = false; this.hud.setHint(null);
@@ -760,7 +773,7 @@ export class Game3D {
   }
   private startOver(): void {
     this.progress = newProgress(); saveProgress(this.progress);
-    this.hollow = newHollow(); saveHollow(this.hollow); this.shore = newShore(); saveShore(this.shore); this.ringAttempt = []; this.boardSeen = false; this.shellTipShown = false; this.heronAnnounced = false; this.transition = null; if (this.area !== 'woods') this.setArea('woods', true); this.shoreWorld?.setTide('still', false); this.shoreWorld?.setCauseway(false, false); this.shoreWorld?.setGlass([]); this.shoreWorld?.setBottles([]); this.shoreWorld?.setSolved(false); this.shoreWorld?.setLampLit(false, false); this.mak.setLit(false); this.keeper.setLit(false); this.hollowWorld?.setGates({ doorOpen: false, secretOpen: false }, false); this.hollowWorld?.setShards([]); this.hollowWorld?.setGlowcaps([]); this.hollowWorld?.setEchoesDone(false); this.hollowWorld?.resetEchoes(); this.hollowWorld?.setHeartLit(false); this.hollowWorld?.setTablets([]); this.hollowWorld?.setWardenDown(true); this.glim.setLit(false); this.glimGreeted = false; this.talkAt = null; this.talkWho = null; this.weakTipShown = false; this.wardenAnnounced = false; this.echoStep = 0; this.muralSeen = false;
+    this.hollow = newHollow(); saveHollow(this.hollow); this.shore = newShore(); saveShore(this.shore); this.wilds = newWilds(); saveWilds(this.wilds); this.wildsWorld.setState(this.wilds); this.wildsTalkWho = null; this.ringAttempt = []; this.boardSeen = false; this.shellTipShown = false; this.heronAnnounced = false; this.transition = null; if (this.area !== 'woods') this.setArea('woods', true); this.shoreWorld?.setTide('still', false); this.shoreWorld?.setCauseway(false, false); this.shoreWorld?.setGlass([]); this.shoreWorld?.setBottles([]); this.shoreWorld?.setSolved(false); this.shoreWorld?.setLampLit(false, false); this.mak.setLit(false); this.keeper.setLit(false); this.hollowWorld?.setGates({ doorOpen: false, secretOpen: false }, false); this.hollowWorld?.setShards([]); this.hollowWorld?.setGlowcaps([]); this.hollowWorld?.setEchoesDone(false); this.hollowWorld?.resetEchoes(); this.hollowWorld?.setHeartLit(false); this.hollowWorld?.setTablets([]); this.hollowWorld?.setWardenDown(true); this.glim.setLit(false); this.glimGreeted = false; this.talkAt = null; this.talkWho = null; this.weakTipShown = false; this.wardenAnnounced = false; this.echoStep = 0; this.muralSeen = false;
     this.cosmetics = sanitizeCosmetics(this.cosmetics, ownershipOf(this.progress)); this.applyCosmetics();
     this.petals.forEach(p => { p.collected = false; p.root.visible = true; });
     this.clock = 0; this.startHint = true; this.chars.clear(); this.endSeen = false; this.vitals.respawn(); this.faintT = null; this.hud.fadeTo(false);
@@ -788,7 +801,7 @@ export class Game3D {
     this.updateDayNight(dt);
     this.updateCamera(dt);
     this.fx.update(dt);
-    if (this.map.isOpen) this.map.update({ x: this.pos.x, z: this.pos.z, heading: this.heading, hollow: this.hollow, shore: this.shore, targets: this.area === 'shore' ? shoreTargets(this.shore, this.ringAttempt, this.boardSeen) : this.area === 'hollow' ? hollowTargets(this.hollow, this.echoStep, this.muralSeen) : questTargets(this.progress, this.chars.alive().map(e => ({ x: e.enemy.pos.x, z: e.enemy.pos.z }))) }, this.time);
+    if (this.map.isOpen) this.map.update({ x: this.pos.x, z: this.pos.z, heading: this.heading, hollow: this.hollow, shore: this.shore, wilds: this.wilds, targets: this.area === 'shore' ? shoreTargets(this.shore, this.ringAttempt, this.boardSeen) : this.area === 'hollow' ? hollowTargets(this.hollow, this.echoStep, this.muralSeen) : [...questTargets(this.progress, this.chars.alive().map(e => ({ x: e.enemy.pos.x, z: e.enemy.pos.z }))), ...(this.shoreNext() ? [{ x: SHORE_ARCH.x, z: SHORE_ARCH.z }] : [])] }, this.time);
     this.updatePortrait(dt);
     if (this.wardrobe.isOpen || this.heroPanel.isOpen) this.thumbs.pump(this.wardrobe.isOpen ? 3 : 2);
     this.renderer.render(this.scene, this.camera);
@@ -798,7 +811,7 @@ export class Game3D {
   /** Sky, fog, lights, lamps, fireflies and the sound of the time of day. The clock only runs while the game does. */
   private updateDayNight(dt: number): void {
     const phase = this.frozenPhase ?? phaseAt(this.clock), cave = this.area === 'hollow', coast = this.area === 'shore';
-    this.world.applyLook(cave ? HOLLOW_LOOK : lookForPhase(phase)); this.world.setLampGlow(cave ? 0 : lampLevel(phase)); this.shoreWorld?.setLampLevel(lampLevel(phase));
+    this.world.applyLook(cave ? HOLLOW_LOOK : lookForPhase(phase)); this.world.setLampGlow(cave ? 0 : lampLevel(phase)); this.wildsWorld?.setNight(cave ? 0 : lampLevel(phase)); this.shoreWorld?.setLampLevel(lampLevel(phase));
     this.fireflies.update(this.time, this.pos, cave || coast || isOff('fireflies') ? 0 : fireflyLevel(phase));
     this.butterflies.update(this.time, this.pos, cave || coast || isOff('butterflies') ? 0 : 1 - Math.min(1, fireflyLevel(phase) * 1.6));
     this.sfx.duck(this.hud.blocking);
@@ -874,10 +887,11 @@ export class Game3D {
     }
     const r = resolveCircles(this.grid, nx, nz, HERO_RADIUS);
     nx = r.x; nz = r.z;
+    if (this.area === 'woods' && !thornsOpen(this.wilds)) { const t = resolveCircles(this.thornGrid, nx, nz, HERO_RADIUS); nx = t.x; nz = t.z; }
     if (this.area === 'hollow') { const c = clampToFloor(nx, nz); nx = c.x; nz = c.z; } else if (this.area === 'shore') { const c = clampShoreFloor(gatesOf(this.shore), nx, nz); nx = c.x; nz = c.z; } else { const dist = Math.hypot(nx, nz); if (dist > PLAY_RADIUS) { nx *= PLAY_RADIUS / dist; nz *= PLAY_RADIUS / dist; } }
     this.pos.x = nx; this.pos.z = nz; this.y = this.groundY(nx, nz);
 
-    if (this.area === 'woods') { this.updateEnemies(dt); this.updatePatrol(dt); this.updatePetals(dt); this.updateElder(dt); } else if (this.area === 'shore') this.updateShore(dt); else this.updateHollow(dt);
+    if (this.area === 'woods') { this.updateEnemies(dt); this.updatePatrol(dt); this.updatePetals(dt); this.updateElder(dt); this.updateWilds(dt); } else if (this.area === 'shore') this.updateShore(dt); else this.updateHollow(dt);
     this.updatePortals(); this.updateTransition(dt);
     this.ambient(dt, speed);
     this.updateWorld();
@@ -902,15 +916,15 @@ export class Game3D {
     // HUD
     this.input.setCooldown('attack', c.cooldownFraction('attack')); this.input.setCooldown('dodge', c.cooldownFraction('dodge')); this.input.setCooldown('special', c.cooldownFraction('special'));
     const stone = this.nearRuneStone() && !this.nearElder() && !this.puzzle.isOpen;
-    const near = (this.nearElder() || stone || this.hollowTarget() !== null || this.shoreTarget() !== null) && !busyTalking && this.faintT === null && this.transition === null;
+    const near = (this.nearElder() || stone || this.hollowTarget() !== null || this.shoreTarget() !== null || this.wildsLabel() !== null) && !busyTalking && this.faintT === null && this.transition === null;
     this.runeStone.setNear(stone && near);
     this.input.setTalk(near);
     const hot = this.area === 'hollow' ? this.hollowTarget() : null, hollowLabel = hot?.kind === 'tablet' ? this.strings.ui.read : hot?.kind === 'glim' ? this.strings.ui.talk : null;
-    const shoreLabel = this.shoreLabel();
+    const shoreLabel = this.shoreLabel() ?? this.wildsLabel();
     this.input.setTalkLabel(stone ? this.strings.ui.read : hollowLabel ?? shoreLabel ?? this.labels().talk);
     if (this.startHint && Math.hypot(this.pos.x - SPAWN.x, this.pos.z - SPAWN.z) > 4) this.startHint = false;
     if (near && stone) this.hud.setHint(this.input.touch ? this.strings.ui.read : `${this.strings.ui.read}: E`);
-    else if (near && !this.input.touch) this.hud.setHint(`${this.area === 'hollow' ? hollowLabel ?? this.ht.ui.use : this.area === 'shore' ? shoreLabel ?? this.ht.ui.use : this.strings.ui.talk}: E`);
+    else if (near && !this.input.touch) this.hud.setHint(`${this.area === 'hollow' ? hollowLabel ?? this.ht.ui.use : this.area === 'shore' ? shoreLabel ?? this.ht.ui.use : shoreLabel ?? this.strings.ui.talk}: E`);
     else if (this.startHint && !busyTalking) this.hud.setHint(this.input.touch ? this.strings.ui.moveHint : this.strings.controlsHelp[0]);
     else this.hud.setHint(null);
     if (this.vitals.hp !== this.lastHearts) { this.hud.setHearts(this.vitals.hp, this.vitals.maxHp); this.lastHearts = this.vitals.hp; }
@@ -1016,10 +1030,15 @@ export class Game3D {
   }
 
   // ---------- v2.22 Crystal Hollow ----------
+  /** True while the next thing to do is walk through the driftwood arch to Moonwake Shore. */
+  private shoreNext(): boolean { return this.hollow.heartDone && this.progress.stage === 'complete' && !this.shore.visited; }
+  private shoreBeamT = 0;
   private objectiveText(): string {
+    if (this.area === 'woods' && this.shoreNext()) return this.wt.next.shoreObjective;
     if (this.area === 'shore') return shoreObjective(this.lang, this.shore, { inside: true, rung: this.ringAttempt.length, boardSeen: this.boardSeen });
     if (this.area === 'hollow') return hollowObjective(this.lang, this.hollow, { inside: true, step: this.echoStep, muralSeen: this.muralSeen });
     if (this.progress.stage === 'complete') { const t = hollowObjective(this.lang, this.hollow, { inside: false, step: 0, muralSeen: false }); if (t) return t; if (this.hollow.heartDone) { const u = shoreObjective(this.lang, this.shore, { inside: false, rung: 0, boardSeen: false }); if (u) return u; } } // until the Heartstone is touched the card points at the Hollow
+    if (this.progress.stage === 'complete') return this.wildsObjective() ?? objectiveLine(this.lang, this.progress);
     return objectiveLine(this.lang, this.progress);
   }
   private objectiveCount(): { done: number; total: number } | null {
@@ -1031,12 +1050,130 @@ export class Game3D {
   }
   private elderLines(stage: WoodsStage): string[] { return stage === 'complete' ? (this.hollow.heartDone ? (this.shore.lampLit ? SHORE_TEXT[this.lang].elderShoreDone : SHORE_TEXT[this.lang].elderToShore) : this.ht.elderComplete) : this.strings.elder[stage]; }
 
+  // ---------- v2.31 the wider woods ----------
+  private get wt() { return WILDS_TEXT[this.lang]; }
+  private wildsFill(t: string, v: Record<string, string | number>): string { return t.replace(/\{(\w+)\}/g, (_m, k: string) => String(v[k] ?? '')); }
+  private wildsXp(xp: number, at: { x: number; z: number }): void { if (xp > 0) this.applyQuest({ kind: 'wilds', xp }, { x: at.x, y: this.groundY(at.x, at.z) + 1.6, z: at.z }); }
+  private saveWildsNow(): void { saveWilds(this.wilds); this.wildsSaveT = 0; }
+  private wildsObjective(): string | null {
+    const t = this.wt.objective, w = this.wilds;
+    for (const who of WHO) { const sc = wildsScript(w, who); if (sc === 'report') return t.report[who]; if (sc === 'waiting') { const c = errandCount(w, who); return this.wildsFill(t.errand[who], { n: c.have, total: c.need }); } }
+    if (w.acorns.length < ACORN_COUNT && w.zones.length >= 3) return this.wildsFill(t.acorns, { n: w.acorns.length, total: ACORN_COUNT });
+    return w.zones.length >= ZONES.length && w.acorns.length >= ACORN_COUNT && w.chests.length >= CHEST_COUNT_ ? t.allDone : t.explore;
+  }
+  /** What the use button would do right now in the wider woods (nearest thing within reach), or null. */
+  private wildsTarget(): { kind: 'chest' | 'lantern' | 'tablet' | 'sign' | 'gate' | 'door' | 'person'; id: number | string } | null {
+    if (this.area !== 'woods' || this.transition || this.hud.dialogueOpen) return null;
+    const px = this.pos.x, pz = this.pos.z; let best: { kind: 'chest' | 'lantern' | 'tablet' | 'sign' | 'gate' | 'door' | 'person'; id: number | string } | null = null, bd = Infinity;
+    const test = (kind: 'chest' | 'lantern' | 'tablet' | 'sign' | 'gate' | 'door' | 'person', id: number | string, x: number, z: number, range: number): void => { const d = Math.hypot(px - x, pz - z); if (d < range && d < bd) { bd = d; best = { kind, id }; } };
+    if (Math.abs(px) < 95 && Math.abs(pz) < 95) {
+      CHEST_SPOTS.forEach((c, i) => test('chest', i, c.x, c.z, 2.5)); LANTERN_SPOTS.forEach((c, i) => test('lantern', i, c.x, c.z, 2.3)); WILDS_TABLET_SPOTS.forEach((c, i) => test('tablet', i, c.x, c.z, 2.3));
+      SIGN_SPOTS.forEach(c => test('sign', c.id, c.x, c.z, 2.2)); PEOPLE.forEach(c => test('person', c.id, c.at.x, c.at.z, 2.7));
+      test('gate', 'gate', MIST_GATE.x, MIST_GATE.z, MIST_GATE.trigger + 1.5); test('door', 'door', UNDERCROFT_DOOR.x, UNDERCROFT_DOOR.z, UNDERCROFT_DOOR.trigger + 1);
+    }
+    return best;
+  }
+  private wildsLabel(): string | null {
+    const w = this.wildsTarget(); if (!w) return null; const u = this.wt.ui;
+    return w.kind === 'chest' ? (this.wilds.chests.includes(w.id as number) ? u.look : u.open) : w.kind === 'lantern' ? (this.wilds.lanterns.includes(w.id as number) ? u.look : u.light) : w.kind === 'tablet' ? u.read : w.kind === 'person' ? u.talk : u.look;
+  }
+  private useWilds(w: { kind: 'chest' | 'lantern' | 'tablet' | 'sign' | 'gate' | 'door' | 'person'; id: number | string }): void {
+    const T = this.wt;
+    this.input.releaseAll(); this.combat.clearBuffer(); this.vel.x = this.vel.z = 0; this.startHint = false; this.hud.setHint(null);
+    const say = (name: string, lines: string[], at: { x: number; z: number }, after?: () => void): void => { this.talkAt = at; this.talkWho = 'wilds'; this.hud.openDialogue(name, lines, () => { this.talkAt = null; this.talkWho = null; this.wildsTalkWho = null; after?.(); }); this.sfx.play('talk'); };
+    switch (w.kind) {
+      case 'chest': {
+        const id = w.id as number, c = CHEST_SPOTS[id];
+        if (this.wilds.chests.includes(id)) { this.hud.toast(T.toast.chestEmpty, 2200, 'sparkles'); return; }
+        const r = openChest(this.wilds, id); this.wilds = r.state; this.saveWildsNow(); this.wildsWorld.setChest(id, true);
+        this.fx.burst(c.x, this.groundY(c.x, c.z) + 0.9, c.z, 0xffe08a, 40, 3.2, 1.1, 1.6, 2.8); this.fx.flash(c.x, this.groundY(c.x, c.z) + 1, c.z, 0xffe08a, 3.4, 0.6); this.sfx.play('fanfare'); this.hero.cheer(1.2);
+        this.hud.toast(r.all ? T.toast.allChests : T.toast.chest, 3200, 'gift'); this.wildsXp(r.xp, c); this.pulseMapTile(); return;
+      }
+      case 'lantern': {
+        const id = w.id as number, p = LANTERN_SPOTS[id]; if (this.wilds.lanterns.includes(id)) return;
+        const r = lightLantern(this.wilds, id); this.wilds = r.state; this.saveWildsNow(); this.wildsWorld.setLantern(id, true);
+        this.fx.burst(p.x, this.groundY(p.x, p.z) + 1.6, p.z, 0x9fe8ff, 26, 2.4, 1, 1.2, 2.2); this.sfx.play('petal', this.wilds.lanterns.length);
+        this.hud.toast(r.all ? T.toast.lanternsDone : this.wildsFill(T.toast.lantern, { n: this.wilds.lanterns.length, total: LANTERN_COUNT }), 3000, 'sparkles'); this.wildsXp(r.xp, p); return;
+      }
+      case 'tablet': {
+        const id = w.id as number, p = WILDS_TABLET_SPOTS[id], first = !this.wilds.tablets.includes(id);
+        say(T.tablet.name, T.tablet.lines[id] ?? T.tablet.lines[0], p, () => {
+          if (!first) return; const r = readWildsTablet(this.wilds, id); this.wilds = r.state; this.saveWildsNow();
+          this.hud.toast(r.all ? T.toast.allTablets : this.wildsFill(T.toast.tablet, { n: this.wilds.tablets.length, total: WILDS_TABLET_COUNT }), 2800, 'sparkles'); this.wildsXp(r.xp, p);
+        }); return;
+      }
+      case 'sign': { const sp = SIGN_SPOTS.find(q => q.id === w.id)!; say(T.sign.name, T.sign.lines[w.id as string] ?? [''], sp); return; }
+      case 'gate': say(T.gate.name, T.gate.lines, MIST_GATE); return;
+      case 'door': say(T.door.name, T.door.lines, UNDERCROFT_DOOR); return;
+      case 'person': this.talkToWilds(w.id as Who); return;
+    }
+  }
+  private pulseMapTile(): void { /* the map tile pulses with the rest of the bag tiles in refreshHud */ }
+  private talkToWilds(who: Who): void {
+    const T = this.wt, P = T[who], sc = wildsScript(this.wilds, who), at = PEOPLE.find(q => q.id === who)!.at, npc = this.wildsWorld.npcs[who], c = errandCount(this.wilds, who);
+    this.talkAt = at; this.talkWho = 'wilds'; this.wildsTalkWho = who; npc.wave(1.2);
+    const lines = sc === 'intro' ? P.intro : sc === 'waiting' ? P.waiting.map(l => this.wildsFill(l, { n: c.have, total: c.need })) : sc === 'report' ? P.report : P.thanks;
+    const ask = sc === 'report' ? (P.ask ? this.gateQuestion(P.ask, who === 'din' ? 'clock' : 'money') : this.gateQuestion()) : undefined;
+    this.hud.openDialogue(P.name, lines, () => {
+      this.talkAt = null; this.talkWho = null; this.wildsTalkWho = null;
+      if (sc === 'intro') { this.wilds = wildsAsked(this.wilds, who); this.saveWildsNow(); this.hud.toast(T.toast[`${who}Met` as 'taniMet'], 3200, 'sparkles'); this.refreshHud(); }
+      else if (sc === 'report') {
+        const r = wildsClaim(this.wilds, who); if (r.xp === 0) return;   // paid once
+        this.wilds = r.state; this.saveWildsNow(); npc.setLit(true); this.hero.cheer(1.6); this.sfx.play('fanfare'); this.hud.toast(T.toast[`${who}Done` as 'taniDone'], 4200, 'sparkles');
+        if (who === 'lumut') { this.wildsWorld.setThorns(true); setTimeout(() => this.hud.toast(T.toast.thorns, 3600, 'sparkles'), 1500); }
+        this.wildsXp(r.xp, at); this.refreshHud();
+      }
+    }, ask);
+    this.sfx.play('talk');
+  }
+  /** Per frame in the woods: pickups, region discovery, the map's fog of war, and the three people (turning, markers). */
+  private updateWilds(dt: number): void {
+    if (this.shoreNext()) { this.shoreBeamT -= dt; if (this.shoreBeamT <= 0) { this.shoreBeamT = 2.2; this.fx.beam(SHORE_ARCH.x, this.groundY(SHORE_ARCH.x, SHORE_ARCH.z), SHORE_ARCH.z, 0xbfe4ff, 9, 1.8, 0.6); } }
+    if (this.faintT !== null) return;
+    const px = this.pos.x, pz = this.pos.z, T = this.wt;
+    const take = (spots: readonly { x: number; z: number }[], have: readonly number[], fn: (s: WildsState, id: number) => { state: WildsState; xp: number; first: boolean; all?: boolean }, kind: 'acorn' | 'pumpkin' | 'pearl', fx: number, text: string, bonusText?: string): void => {
+      if (have.length >= spots.length) return;
+      for (let i = 0; i < spots.length; i++) {
+        if (have.includes(i)) continue; const sp = spots[i];
+        if (Math.abs(px - sp.x) > 1.6 || Math.abs(pz - sp.z) > 1.6 || Math.hypot(px - sp.x, pz - sp.z) > 1.5) continue;
+        const r = fn(this.wilds, i); if (!r.first) continue;
+        this.wilds = r.state; this.saveWildsNow(); this.wildsWorld.collect(kind, i); this.hero.cheer();
+        const gy = this.groundY(sp.x, sp.z); this.fx.burst(sp.x, gy + 0.7, sp.z, fx, 22, 2.6, 0.9, 1.3, 2.2); this.fx.flash(sp.x, gy + 0.8, sp.z, fx, 2.6, 0.45);
+        const n = (kind === 'acorn' ? this.wilds.acorns : kind === 'pumpkin' ? this.wilds.pumpkins : this.wilds.pearls).length;
+        this.sfx.play('petal', Math.min(n, 8) - 1);
+        this.hud.toast(r.all && bonusText ? bonusText : this.wildsFill(text, { n, total: spots.length }), 2400, 'sparkles'); this.wildsXp(r.xp, sp);
+        if (r.all && kind === 'pumpkin') this.hud.toast(T.toast.pumpkinsDone, 3600, 'sparkles'); if (r.all && kind === 'pearl') this.hud.toast(T.toast.pearlsDone, 3600, 'sparkles');
+      }
+    };
+    take(ACORN_SPOTS, this.wilds.acorns, collectAcorn, 'acorn', 0xffd860, T.toast.acorn, T.toast.allAcorns);
+    take(PUMPKIN_SPOTS, this.wilds.pumpkins, collectPumpkin, 'pumpkin', 0xffb040, T.toast.pumpkin);
+    take(PEARL_SPOTS, this.wilds.pearls, collectPearl, 'pearl', 0x9fe8ff, T.toast.pearl);
+    void ACORN_XP; void PUMPKIN_COUNT; void PEARL_COUNT;
+    // discovery of regions
+    const zid = zoneAt(px, pz);
+    if (zid && !this.wilds.zones.includes(zid)) {
+      const r = discoverZone(this.wilds, zid), z = zoneById(zid)!;
+      if (r.first) { this.wilds = r.state; this.saveWildsNow(); this.sfx.play('fanfare'); this.hero.cheer(0.8); this.hud.toast(this.wildsFill(z.hidden ? T.toast.hiddenFound : T.toast.discover, { name: T.zones[z.id] }), 3600, z.hidden ? 'star' : 'sparkles'); this.wildsXp(r.xp, { x: px, z: pz }); this.refreshHud(); if (!this.wildsTipShown) { this.wildsTipShown = true; setTimeout(() => this.hud.toast(T.toast.fogHint, 3600, 'sparkles'), 3800); } }
+    }
+    // fog of war: mark what the hero can see, twice a second, and save a few seconds after anything changed
+    this.wildsExploreT += dt; this.wildsSaveT += dt;
+    if (this.wildsExploreT > 0.5) { this.wildsExploreT = 0; const n = markExplored(this.wilds, px, pz, 16); if (n !== this.wilds) { this.wilds = n; this.wildsSaveT = Math.max(this.wildsSaveT, 0) ; if (this.wildsSaveT > 6) this.saveWildsNow(); } }
+    // the people: face the hero when close, show a marker when they have something to say
+    for (const pe of PEOPLE) {
+      const npc = this.wildsWorld.npcs[pe.id], d = Math.hypot(px - pe.at.x, pz - pe.at.z); if (d > 40) continue;
+      const sc = wildsScript(this.wilds, pe.id), face = d < 6 ? Math.atan2(px - pe.at.x, pz - pe.at.z) : pe.facing;
+      npc.setMarker(sc === 'intro' || sc === 'report'); npc.setTalking(this.hud.dialogueOpen && this.wildsTalkWho === pe.id); npc.setLit(this.wilds[pe.id] === 2);
+      npc.update(this.time, face);
+    }
+    void exploredShare;
+  }
+
   /** Updates whichever area the hero is in: the woods' gate and ruins glow, or the cave's crystals, water and motes. */
   private updateWorld(): void {
     this.updateShoreArch();
     if (this.area === 'shore' && this.shoreWorld) { this.shoreWorld.update(this.time, this.pos); this.world.follow(this.time, this.pos.x, this.pos.z, { y: 0, scenery: false }); }
     else if (this.area === 'hollow' && this.hollowWorld) { this.hollowWorld.update(this.time, this.pos); this.world.follow(this.time, this.pos.x, this.pos.z, { y: 0, scenery: false }); }
-    else { this.world.update(this.time); this.world.follow(this.time, this.pos.x, this.pos.z); }
+    else { this.world.update(this.time); this.world.follow(this.time, this.pos.x, this.pos.z); this.wildsWorld.update(this.time, this.pos.x, this.pos.z); }
   }
   private setWoodsVisible(v: boolean): void {
     this.world.group.visible = v; this.elder.root.visible = v; this.runeStone.root.visible = v; this.glim.root.visible = this.area === 'hollow'; this.mak.root.visible = this.keeper.root.visible = this.area === 'shore';
@@ -1087,6 +1224,7 @@ export class Game3D {
       if (left === 'shore') { this.pos.x = SHORE_ARCH_TRIGGER.x + 3.0; this.pos.z = SHORE_ARCH_TRIGGER.z; this.heading = Math.PI / 2; } else { this.pos.x = MOONLIT_GATE_TRIGGER.x + 2.6; this.pos.z = MOONLIT_GATE_TRIGGER.z; this.heading = Math.PI / 2; } this.y = this.groundY(this.pos.x, this.pos.z);
       this.patrolT = 6;
       if (!quiet) this.hud.toast(left === 'shore' ? SHORE_TEXT[this.lang].toast.back : this.ht.toast.back, 2800, 'sprout');
+      if (!quiet && left !== 'shore' && this.shoreNext()) setTimeout(() => this.hud.toast(this.wt.next.shoreToast, 8000, 'star'), 3000);
     }
     this.camYaw = 0; this.focus.init = false; this.camera.clearViewOffset();
     this.input.setLabels(this.labels()); this.map.setArea(a); this.refreshHud();

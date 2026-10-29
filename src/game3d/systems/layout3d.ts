@@ -5,7 +5,9 @@
  */
 import { ColliderGrid, isClear, type Collider } from './colliders';
 import type { Vec2 } from './movement3d';
-import { PLAY_RADIUS, POND, RUINS, VILLAGE, distToTrail, heightAt } from './worldShape';
+import { LEGACY_PLAY_RADIUS as PLAY_RADIUS, POND, RUINS, VILLAGE, distToTrail, heightAt } from './worldShape';
+import { expandLayout, type ExpansionExtras } from './expansionLayout';
+import { expansionMustReach } from './expansion';
 
 export const SPAWN: Vec2 = { x: 0, z: 27 };
 export const ELDER_POS: Vec2 = { x: 3, z: 21 };
@@ -56,6 +58,8 @@ export interface WorldLayout {
   pillars: PillarSpec[]; blocks: BlockSpec[]; colliders: Collider[];
   /** v2.6: twisted dead trees (solid). */
   deadTrees: DeadTreeSpec[];
+  /** v2.31: what the world expansion added (the thorn barrier of the Heartwood shortcut is a separate, removable collider list). */
+  extras: ExpansionExtras;
 }
 
 /** Small deterministic random generator so the world is identical every run. */
@@ -76,7 +80,8 @@ const KEEP_CLEAR: readonly { p: Vec2; r: number }[] = [
   { p: SPAWN, r: 3 }, { p: ELDER_POS, r: 2.5 }, { p: VILLAGE_GATE_POS, r: 3.5 }, { p: MOONLIT_GATE_POS, r: 4 },
 ];
 
-export function buildWorldLayout(seed = 20260): WorldLayout {
+/** `expand: false` returns the original v2.30 glade only (used by the tests that prove it is unchanged). */
+export function buildWorldLayout(seed = 20260, expand = true): WorldLayout {
   const rnd = mulberry32(seed);
   const colliders: Collider[] = [];
   const trees: TreeSpec[] = [], rocks: RockSpec[] = [], bushes: BushSpec[] = [], flowers: FlowerSpec[] = [];
@@ -213,7 +218,10 @@ export function buildWorldLayout(seed = 20260): WorldLayout {
     const a = rnd() * 6.28, d = PLAY_RADIUS - 16 + rnd() * 12;
     if (addDead(Math.sin(a) * d, Math.cos(a) * d)) ok++;
   }
-  return { trees, rocks, bushes, flowers, ferns, mushrooms, stumps, logs, fairyRing, pillars, blocks, colliders, deadTrees };
+  // ---- v2.31 world expansion (drawn last with its own random stream, so nothing above moves)
+  const layout: WorldLayout = { trees, rocks, bushes, flowers, ferns, mushrooms, stumps, logs, fairyRing, pillars, blocks, colliders, deadTrees, extras: { thorns: [], count: { trees: 0, rocks: 0 } } };
+  if (expand) layout.extras = expandLayout(layout, mulberry32(seed + 3100));
+  return layout;
 }
 
 /** Ground point for an object (x, z) including the terrain height. */
@@ -229,6 +237,7 @@ export function mustReach(): { name: string; p: Vec2 }[] {
     { name: 'arena centre', p: { x: BOSS_POS.x, z: BOSS_POS.z + 5 } },
     ...PETAL_SPOTS.map((p, i) => ({ name: `petal ${i}`, p })),
     ...SPROUT_SPOTS.map((p, i) => ({ name: `sprout ${i}`, p })),
+    ...expansionMustReach(),
   ];
 }
 

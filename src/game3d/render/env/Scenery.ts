@@ -11,7 +11,8 @@ import {
 import { ANCIENT_TREE_POS, FAIRY_RING_POS, mulberry32, type PlantSpec, type WorldLayout } from '../../systems/layout3d';
 import type { SkyLook } from '../../systems/lighting3d';
 import type { QualitySettings } from '../../systems/quality';
-import { PLAY_RADIUS, POND, RUINS, TRAIL, VILLAGE, distToTrail, heightAt } from '../../systems/worldShape';
+import { LEGACY_PLAY_RADIUS as PLAY_RADIUS, PLAY_RADIUS as NEW_PLAY_RADIUS, POND, RUINS, TRAIL, VILLAGE, distToTrail, heightAt } from '../../systems/worldShape';
+import { CLEARINGS, FIELDS, MIRROR, distToPaths } from '../../systems/expansionShape';
 import { glowSprite } from '../common';
 import { noise3 } from './noise';
 import {
@@ -124,6 +125,8 @@ const speciesOf = (t: { kind: string; hue: number }): TreeKind => (t.kind === 'o
 const treeTintFor = (t: { kind: string; hue: number }): Color => (t.kind === 'oak' && t.hue < 0.07 ? tintGold.clone() : t.kind === 'blossom' ? new Color(1, 1, 1) : treeTint(t.hue));
 
 const NEAR_GRASS_CELL = 6;
+/** Rocks, logs, stumps and reeds are drawn within this distance of the hero (the fog hides everything further out). */
+const ROCK_RADIUS = 90;
 /** Trees are drawn a little smaller than the layout's footprint so the camera can sit among them. */
 const TREE_SCALE = 0.74;
 const FLOWER_COLOURS = [0xffd84a, 0xff8fc8, 0xffffff, 0xb79cff, 0xff9a6a];
@@ -134,6 +137,9 @@ export class Scenery {
   private readonly sets: { set: InstanceSet; kind: 'tree' | 'plant' | 'rock' }[] = [];
   private readonly grass: { mesh: Mesh; x: number; z: number; count: number; ends: number[] }[] = [];
   private grassBuilt = 1;
+  /** v2.31: grass cells of the expanded woods are built the first time the hero gets near them (a few per frame), not at start-up. */
+  private grassLazy: { cx: number; cz: number; built: boolean }[] = [];
+  private grassMat!: MeshLambertMaterial;
   private lastRefresh = new Vector3(1e9, 0, 1e9);
   private readonly mountains: { mat: MeshBasicMaterial; mix: number }[] = [];
   private readonly clouds: Sprite[] = [];
@@ -282,7 +288,7 @@ export class Scenery {
   // ------------------------------------------------------------------------------------------------ grass
   private buildGrass(rnd: () => number): void {
     const density = 3.4; // tufts (4-7 blades each, or a clover patch / dandelion) per square metre at full quality; lower tiers draw a prefix of each cell's tufts
-    const mat = envMaterial('none', { grass: true }) as MeshLambertMaterial;
+    const mat = envMaterial('none', { grass: true }) as MeshLambertMaterial; this.grassMat = mat;
     const accept = (x: number, z: number): boolean => {
       if (Math.hypot(x, z) > PLAY_RADIUS + 3) return false;
       if (distToTrail(x, z) < 1.25 + rnd() * 0.5) return false;
@@ -300,6 +306,44 @@ export class Scenery {
         this.group.add(mesh); this.grass.push({ mesh, x: cx + NEAR_GRASS_CELL / 2, z: cz + NEAR_GRASS_CELL / 2, count: g.index!.count, ends: g.userData.ends as number[] });
       }
     }
+    // v2.31: the cells outside the original glade, built on demand
+    for (let cx = -NEW_PLAY_RADIUS - 6; cx < NEW_PLAY_RADIUS + 6; cx += NEAR_GRASS_CELL) for (let cz = -NEW_PLAY_RADIUS - 6; cz < NEW_PLAY_RADIUS + 6; cz += NEAR_GRASS_CELL) {
+      const d = Math.hypot(cx + 3, cz + 3);
+      if (d <= PLAY_RADIUS + 5 || d > NEW_PLAY_RADIUS + 5) continue;
+      this.grassLazy.push({ cx, cz, built: false });
+    }
+  }
+
+  /** Whether a blade of the expanded woods may grow at (x, z): not on paths, floors, fields, water or inside the cave. */
+  private expandedGrassOk(x: number, z: number, rnd: () => number): boolean {
+    if (Math.hypot(x, z) > NEW_PLAY_RADIUS + 3) return false;
+    if (distToPaths(x, z) < 1.25 + rnd() * 0.5) return false;
+    if (Math.hypot(x - MIRROR.x, z - MIRROR.z) < MIRROR.r + 0.2 && Math.hypot(x - MIRROR.x, z - MIRROR.z) > MIRROR.island) return false;
+    for (const f of FIELDS) if (Math.abs(x - f.x) < f.w / 2 + 0.5 && Math.abs(z - f.z) < f.d / 2 + 0.5) return false;
+    if (Math.hypot(x - 0, z + 78) < 11 || Math.hypot(x - 30, z + 54) < 4 || Math.hypot(x - 62, z + 66) < 4 || Math.hypot(x + 70, z + 48) < 4.6) return false;
+    const hf = CLEARINGS[0]; if (Math.hypot(x - hf.x, z - hf.z) < 11 && rnd() < 0.5) return false;   // a short, trampled green in the lower village
+    return true;
+  }
+  private buildLazyGrass(budget: number, hx: number, hz: number, range: number): void {
+    let built = 0;
+    for (const c of this.grassLazy) {
+      if (c.built || built >= budget) continue;
+      if (Math.hypot(c.cx + NEAR_GRASS_CELL / 2 - hx, c.cz + NEAR_GRASS_CELL / 2 - hz) > range) continue;
+      c.built = true; built++;
+      const rnd = mulberry32(((c.cx + 512) * 7919 + (c.cz + 512) * 104729) >>> 0);
+      const g = grassCellGeometry(Math.round(3.4 * NEAR_GRASS_CELL * NEAR_GRASS_CELL), { x: c.cx, z: c.cz, size: NEAR_GRASS_CELL }, heightAt, (x, z) => this.expandedGrassOk(x, z, rnd), rnd);
+      if (!g) continue;
+      const mesh = new Mesh(g, this.grassMat); mesh.receiveShadow = true; mesh.frustumCulled = true; mesh.visible = false;
+      this.group.add(mesh);
+      const entry = { mesh, x: c.cx + NEAR_GRASS_CELL / 2, z: c.cz + NEAR_GRASS_CELL / 2, count: g.index!.count, ends: g.userData.ends as number[] };
+      this.grass.push(entry); this.applyGrassQuality(entry);
+    }
+    if (built) this.lastRefresh.set(1e9, 0, 1e9);
+  }
+  private applyGrassQuality(g: { mesh: Mesh; count: number; ends: number[] }): void {
+    const ratio = this.grassBuilt === 0 ? 0 : Math.min(1, this.q.grass);
+    const want = g.count * ratio; let lo = 0, hi = g.ends.length; while (lo < hi) { const m = (lo + hi) >> 1; if (g.ends[m] <= want) lo = m + 1; else hi = m; }
+    g.mesh.geometry.setDrawRange(0, lo > 0 ? g.ends[lo - 1] : 0);
   }
 
   // ------------------------------------------------------------------------------------------------ points of interest
@@ -416,6 +460,7 @@ export class Scenery {
     if (this.foam) { const k = 1 + Math.sin(t * 0.9) * 0.025; this.foam.scale.set(k, k, 1); (this.foam.material as MeshBasicMaterial).opacity = 0.28 + 0.12 * Math.sin(t * 1.3); }
     this.pondGlints.forEach((g, i) => { const k = Math.max(0, Math.sin(t * 1.9 + i * 1.7)) ** 10; g.material.opacity = k * 0.9 * (1 - this.nightNow * 0.7); });
     this.clouds.forEach((c, i) => { const b = this.cloudBase[i]; const a = b.a + t * b.speed * 0.1; c.position.x = Math.cos(a) * b.r; c.position.z = Math.sin(a) * b.r; });
+    this.buildLazyGrass(2, heroX, heroZ, this.q.plantRadius + 2 + NEAR_GRASS_CELL * 2);
     this.refresh(heroX, heroZ, false);
   }
 
@@ -426,7 +471,7 @@ export class Scenery {
     for (const { set, kind } of this.sets) {
       if (kind === 'tree') set.refresh(hx, hz, q.detailRadius, q.detailRadius * 4.5);
       else if (kind === 'plant') set.refresh(hx, hz, q.plantRadius);
-      else set.refresh(hx, hz, 1e6);
+      else set.refresh(hx, hz, ROCK_RADIUS);
     }
     const gr = q.plantRadius + 2;
     for (const g of this.grass) g.mesh.visible = q.grass > 0 && Math.hypot(g.x - hx, g.z - hz) < gr + NEAR_GRASS_CELL;

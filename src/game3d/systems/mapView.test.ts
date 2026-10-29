@@ -29,6 +29,6 @@ describe('woods map', () => {
     expect(questTargets({ ...p, stage: 'sprouts' }, [{ x: 1, z: 2 }])).toEqual([{ x: 1, z: 2 }]);
     expect(questTargets({ ...p, stage: 'runes' }, [])).toEqual([RUNE_STONE_POS]);
     expect(questTargets({ ...p, stage: 'complete', gateOpen: false }, [])).toEqual([ELDER_POS]);
-    expect(onMap({ x: 0, z: 0 })).toBe(true); expect(onMap({ x: 90, z: 0 })).toBe(false);
+    expect(onMap({ x: 0, z: 0 })).toBe(true); expect(onMap({ x: 90, z: 0 })).toBe(true); expect(onMap({ x: 120, z: 0 })).toBe(false);   // v2.31: the woods are 96 m in radius now
   });
 });
